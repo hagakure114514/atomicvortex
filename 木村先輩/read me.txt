@@ -1,0 +1,14 @@
+各フォルダの説明（フォルダ名冒頭の通し番号は省略した）
+(initial_position_generator.cpp, initial_velocity_generator.cppはMonte_Carlo_simulationフォルダを参照)
+
+【rand_gauss2】
+乱数を用いて発生させた原子の初期位置を決めるための半径、方位角、仰角が記入されたcsvファイルが入っている。シミュレーションではこれらcsvファイルから値を取りだす方式を採っている。また、rand_gauss2内のcsvファイルはinitial_position_generator.cppにより生成されたものである。
+
+【rand_maxbol_10uK】
+乱数を用いて発生させたMaxwell-Boltzmann分布(10uK)に従う原子の初期速度分布が記入されたcsvファイルが入っている。シミュレーションではこれらcsvファイルから値を取りだす方式を採っている。また、rand_maxbol内のcsvファイルはinitial_velocity_generator.cppにより生成されたものである。
+
+【rand_maxbol】
+乱数を用いて発生させたMaxwell-Boltzmann分布(5-100uK)に従う原子の初期速度分布が記入されたcsvファイルが入っている。シミュレーションではこれらcsvファイルから値を取りだす方式を採っている。また、rand_maxbol内のcsvファイルはinitial_velocity_generator.cppにより生成されたものである。
+
+【その他のフォルダ】
+各フォルダ内にあるread meを参照されたい。
