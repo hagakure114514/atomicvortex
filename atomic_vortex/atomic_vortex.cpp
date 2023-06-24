@@ -1,4 +1,4 @@
-﻿// atomic_vortex.cpp : このファイルには 'main' 関数が含まれています。プログラム実行の開始と終了がそこで行われます。
+// atomic_vortex.cpp : このファイルには 'main' 関数が含まれています。プログラム実行の開始と終了がそこで行われます。
 //
 
 #include <iostream>
@@ -14,9 +14,9 @@ using std::ofstream;
 
 int main()
 {
-	// spontaneous emission on/off
-    //printf("spontaneous emission calculate? 0:yes, 1:no \n");
-    //char c = std::cin.get();
+	// spontaneous emission mode  
+    printf("select spontaneous emission mode?\n 0:no-sp, 1:z-axis-sp, 2:dipole-radiation, 3:all direction \n");
+    char c = std::cin.get();
 	
 
 	char fname[30];
@@ -28,8 +28,8 @@ int main()
 	velocity v0={ 1.0e-2, 0.0, 0.0};
     atom Rb87(r0, v0, state::d2);		// 原子オブジェクト
     atom* rb87 = &Rb87;
-    DressedAtom gijiLGbeam10;			// dressed-atom状態オブジェクト
-	gijiLGbeam10.flag_sp = (bool)c;
+    DressedAtom OV1;			// dressed-atom状態オブジェクト
+	OV1.flag_sp = (int)c;
 
 
     // 配列の定義
@@ -39,9 +39,9 @@ int main()
 	int lim=0;
     for (int i = 0; i <= jloop; i++) {
 		lim = i;
-        gijiLGbeam10.process_dipole(rb87);
-        gijiLGbeam10.process_diss(rb87);
-        gijiLGbeam10.step_motion(rb87);
+        OV1.process_dipole(rb87);
+        OV1.process_diss(rb87);
+        OV1.step_motion(rb87);
 
         x[i] = rb87->r.x;  y[i] = rb87->r.y;  z[i] = rb87->r.z;
 
@@ -60,7 +60,7 @@ int main()
 		ofs << x[i] << ", " << y[i] << ", " << z[i] << endl;
     }
 
-	printf("spontaneous_emission_%d_times\n", gijiLGbeam10.count_sp);
+	printf("spontaneous_emission_%d_times\n", OV1.count_sp);
 
     return 0;
 }

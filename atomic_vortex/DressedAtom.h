@@ -12,7 +12,7 @@ public:
 	void step_motion(atom* obj);
 	
 	DressedAtom();
-	bool flag_sp = 0;
+	int flag_sp = 3;
 	int count_sp = 0;
 	int life_sp = 1;
 

@@ -237,9 +237,6 @@ void DressedAtom::recoil_diss(atom* obj)
 	std::mt19937 rand_src(std::random_device{}());
 	std::uniform_real_distribution<double> dist(0.0, 1.0);
 
-	double sp_psi = 2.0 * M_PI * dist(rand_src);			//自然放出の方位角
-	double sp_theata = M_PI * dist(rand_src);			//自然放出の仰角
-
 	double p_recoil = dist(rand_src);
 	if (p_recoil <= branch) {
 		obj->s = state::d1;
@@ -248,9 +245,36 @@ void DressedAtom::recoil_diss(atom* obj)
 		obj->s = state::d2;
 	}
 
-	obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass - hbar * l / (obj->radius) * sin(obj->radius) / mass;
-	obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass + hbar * l / (obj->radius) * cos(obj->radius) / mass;
-	obj->v.vz += hbar * k_wave  * cos(sp_theata) / mass;
+	switch(flag_sp){
+		case 0:		//no momentum change
+			obj->v.vx += 0.0;
+			obj->v.vy += 0.0;
+			obj->v.vz += 0.0;
+
+		case 1:		// wavevector direction
+			double k_recoil = (dist(rand_src)>0.5)? k_wave*1.0: k_wave*-1.0;
+			obj->v.vx += 0.0;
+			obj->v.vy += 0.0;
+			obj->v.vz += hbar * k_recoil;
+
+		case 2:		// dipole radiation direction
+			double sp_psi = 2.0 * M_PI * dist(rand_src);	//psi around polarization axis
+			double sp_theata = M_PI * dist(rand_src);
+
+			obj->v.vx += 0.0;
+			obj->v.vy += 0.0;
+			obj->v.vz += hbar * k_wave;
+
+		default:
+			double sp_psi = 2.0 * M_PI * dist(rand_src);			//自然放出の方位角
+			double sp_theata = M_PI * dist(rand_src);			//自然放出の仰角
+
+			obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass - hbar * l / (obj->radius) * sin(obj->radius) / mass;
+			obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass + hbar * l / (obj->radius) * cos(obj->radius) / mass;
+			obj->v.vz += hbar * k_wave  * cos(sp_theata) / mass;
+
+	}
+	
 
 }
 
