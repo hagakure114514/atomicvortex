@@ -19,19 +19,15 @@ void DressedAtom::process_dipole(atom* obj)
 // dissipative force
 void DressedAtom::process_diss(atom* obj)
 {
-	// dissipative force
-	force_diss(obj);
-
-	//if(flag_sp !=1){
+	if(flag_sp !=0){
 
 		// spontaneous emission occur
 		if (spontaneous_emission(obj) == 1) {
 			detuning_doppler(obj);
 			recoil_diss(obj);
 			count_sp++;
-			//sisyphus_cooling(obj);
 		}
-	//}
+	}
 }
 	
 
@@ -60,18 +56,18 @@ void DressedAtom::step_motion(atom* obj)
 
 
 // factorial function x!
-double DressedAtom::factorial(int x) {
-	double y = 1.0;
-	if (x == 0) {
-		return y;
-	}
-	else {
-		for (int i = 1; i <= x; i++) {
-			y = y * (double)i;
-		}
-		return y;
-	}
-}
+// double DressedAtom::factorial(int x) {
+// 	double y = 1.0;
+// 	if (x == 0) {
+// 		return y;
+// 	}
+// 	else {
+// 		for (int i = 1; i <= x; i++) {
+// 			y = y * (double)i;
+// 		}
+// 		return y;
+// 	}
+// }
 
 // intensity function of Optical Vortex
 double DressedAtom::intensity(double x)
@@ -133,10 +129,10 @@ void DressedAtom::force_dip(atom* obj)
 {
 	double dUopt = 0.0;
 	if (obj->s == state::d1) {
-		dUopt = hbar * detuning * log(1.0+s1(obj->radius)) / 2.0 - hbar * detuning * log(1.0+s1(obj->radius_pre)) / 2.0;
+		dUopt = 2.0/3.0 * hbar * detuning / 2.0 * ( log(1.0+s1(obj->radius)) - log(1.0+s1(obj->radius_pre)) );
 	}
 	else if (obj->s == state::d2) {
-		dUopt = hbar * (detuning + delta_hfs) * log(1.0+s2(obj->radius)) / 2.0 - hbar * (detuning + delta_hfs) * log(1.0+s2(obj->radius_pre)) / 2.0;
+		dUopt = 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 * ( log(1.0+s2(obj->radius)) - log(1.0+s2(obj->radius_pre)) );
 	}
 	else {
 		
@@ -145,10 +141,12 @@ void DressedAtom::force_dip(atom* obj)
 		double p_diss = dist(rand_src);
 
 		if (p_diss <= branch) {
-			dUopt = hbar * detuning * log(1.0+s1(obj->radius)) / 2.0 - hbar * detuning * log(1.0+s1(obj->radius_pre)) / 2.0;
+			dUopt = 2.0/3.0 * hbar * detuning / 2.0 * ( log(1.0+s1(obj->radius)) - log(1.0+s1(obj->radius_pre)) );
+			obj->s = state::d1;
 		}
 		else {
-			dUopt = hbar * (detuning + delta_hfs) * log(1.0+s2(obj->radius)) / 2.0 - hbar * (detuning + delta_hfs) * log( 1.0 +s2(obj->radius_pre)) / 2.0;
+			dUopt = 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 * ( log(1.0+s2(obj->radius)) - log(1.0+s2(obj->radius_pre)) );
+			obj->s = state::d2;
 		}
 	}
 
@@ -161,34 +159,36 @@ void DressedAtom::force_dip(atom* obj)
 }
 
 
-void DressedAtom::force_diss(atom* obj)
-{
-	double F_diss = 0.0;
-	if (obj->s == state::d1) {
-		F_diss = hbar * gamma1 / 2.0 * s1(obj->radius) / (1.0+s1(obj->radius));
-	}
-	else if (obj->s == state::d2) {
-		F_diss = hbar * gamma2 / 2.0 * s2(obj->radius) / (1.0+s2(obj->radius));
-	}
-	else {
+// void DressedAtom::force_diss(atom* obj)
+// {
+// 	double F_diss = 0.0;
+// 	if (obj->s == state::d1) {
+// 		F_diss = hbar * gamma1 / 2.0 * s1(obj->radius) / (1.0+s1(obj->radius));
+// 	}
+// 	else if (obj->s == state::d2) {
+// 		F_diss = hbar * gamma2 / 2.0 * s2(obj->radius) / (1.0+s2(obj->radius));
+// 	}
+// 	else {
 		
-		std::mt19937 rand_src(std::random_device{}());
-		std::uniform_real_distribution<double> dist(0.0, 1.0);
-		double p_diss = dist(rand_src);
+// 		std::mt19937 rand_src(std::random_device{}());
+// 		std::uniform_real_distribution<double> dist(0.0, 1.0);
+// 		double p_diss = dist(rand_src);
 
-		if (p_diss <= branch) {
-			F_diss = hbar * gamma1 / 2.0 * s1(obj->radius) / (1.0+s1(obj->radius));
-		}
-		else {
-			F_diss = hbar * gamma2 / 2.0 * s2(obj->radius) / (1.0+s2(obj->radius));
-		}
-	}
+// 		if (p_diss <= branch) {
+// 			F_diss = hbar * gamma1 / 2.0 * s1(obj->radius) / (1.0+s1(obj->radius));
+// 			obj->s = state::d1;
+// 		}
+// 		else {
+// 			F_diss = hbar * gamma2 / 2.0 * s2(obj->radius) / (1.0+s2(obj->radius));
+// 			obj->s = state::d2;
+// 		}
+// 	}
 
-		obj->acc_x += -F_diss * sin(obj->phi) * l/(obj->radius) / mass;
-		obj->acc_y += F_diss * cos(obj->phi) * l/(obj->radius) / mass;
-		obj->acc_z += F_diss * abs(k_wave) / mass;
+// 		obj->acc_x += -F_diss * sin(obj->phi) * l/(obj->radius) / mass;
+// 		obj->acc_y += F_diss * cos(obj->phi) * l/(obj->radius) / mass;
+// 		obj->acc_z += F_diss * abs(k_wave) / mass;
 
-}
+// }
 
 // 自然放出
 bool DressedAtom::spontaneous_emission(atom* obj)
@@ -204,22 +204,14 @@ bool DressedAtom::spontaneous_emission(atom* obj)
 		//double p1 = gamma * s1(obj->radius) * dt * (double)life_sp / 2.0;
 		double p1 = 1.0 - exp(-gamma * s1(obj->radius) * dt / 2.0);
 
-		if(psp<=p1){
-			p = 1;
-		}
-		else {
-			p= 0;
-		}
+		p = psp<=p1 ? 1 : 0;
+
 	}
 	else if (obj->s == state::d2) {
 		double p2 = 1.0 - exp(-gamma * s2(obj->radius) * dt / 2.0);
 
-		if (psp <= p2) {
-			p = 1;
-		}
-		else {
-			p = 0;
-		}
+		p = psp<=p2 ? 1 : 0;
+
 	}
 	else {
 		// |3> は自然放出を起こさない。
@@ -236,14 +228,7 @@ void DressedAtom::recoil_diss(atom* obj)
 {
 	std::mt19937 rand_src(std::random_device{}());
 	std::uniform_real_distribution<double> dist(0.0, 1.0);
-
 	double p_recoil = dist(rand_src);
-	if (p_recoil <= branch) {
-		obj->s = state::d1;
-	}
-	else {
-		obj->s = state::d2;
-	}
 
 	switch(flag_sp){
 		case 0:		//no momentum change
@@ -255,7 +240,7 @@ void DressedAtom::recoil_diss(atom* obj)
 			double k_recoil = (dist(rand_src)>0.5)? k_wave*1.0: k_wave*-1.0;
 			obj->v.vx += 0.0;
 			obj->v.vy += 0.0;
-			obj->v.vz += hbar * k_recoil;
+			obj->v.vz += hbar * k_wave / mass + hbar * k_recoil;
 
 		case 2:		// dipole radiation direction
 			double sp_psi = 2.0 * M_PI * dist(rand_src);	//psi around polarization axis
@@ -263,7 +248,7 @@ void DressedAtom::recoil_diss(atom* obj)
 
 			obj->v.vx += 0.0;
 			obj->v.vy += 0.0;
-			obj->v.vz += hbar * k_wave;
+			obj->v.vz += hbar * k_wave / mass + hbar * k_wave;
 
 		default:
 			double sp_psi = 2.0 * M_PI * dist(rand_src);			//自然放出の方位角
@@ -271,65 +256,36 @@ void DressedAtom::recoil_diss(atom* obj)
 
 			obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass - hbar * l / (obj->radius) * sin(obj->radius) / mass;
 			obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass + hbar * l / (obj->radius) * cos(obj->radius) / mass;
-			obj->v.vz += hbar * k_wave  * cos(sp_theata) / mass;
+			obj->v.vz += hbar * k_wave / mass + hbar * k_wave  * cos(sp_theata) / mass;
 
+	}
+
+	if (obj->s == state::d1) {
+		if (p_recoil <= branch) {
+			// |1,n-1>への自然放出
+			obj->s = state::d1;
+		}else{
+			// |2,n-1>への自然放出
+			// Sisyphus冷却
+			obj->s = state::d2;
+
+			double uopt1 = 2.0/3.0 * hbar * detuning / 2.0 * log(1.0+s1(obj->radius));
+			double uopt2 = 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 * log(1.0+s2(obj->radius));
+			double Kin_r = ;
+
+			// 運動エネルギーの変化
+			obj->v.vx = 0.0;
+			obj->v.vy = 0.0;
+		}
+	}else{
+		if (p_recoil <= branch) {
+			// |1,n-1>への自然放出
+			obj->s = state::d1;
+		}else{
+			// |2,n-1>への自然放出
+			obj->s = state::d2;
+		}
 	}
 	
-
-}
-
-// Sisyphus冷却
-void DressedAtom::sisyphus_cooling(atom* obj)
-{
-	std::mt19937 rand_src(std::random_device{}());
-	std::uniform_real_distribution<double> dist(0.0, 1.0);
-
-	double psisy = dist(rand_src);			//sisyphus冷却が起こるかのダイス
-
-	double uopt_kin = 0.0;
-	double uopt1 = hbar * detuning * s1(obj->radius) / 2.0;
-	double uopt2 = hbar * (detuning + delta_hfs) * s2(obj->radius) / 2.0;
-	double uopt3 = -uopt1 - uopt2;
-
-	double kinetic_r = 1.0 / 2.0 * mass * ((obj->v.vx) * cos(obj->phi) + (obj->v.vy) * sin(obj->phi)) * ((obj->v.vx) * cos(obj->phi) + (obj->v.vy) * sin(obj->phi));
-
-	if (psisy <=branch) {
-
-		// |1,n-1>への自然放出
-		if (obj->s == state:: d1) {
-			//運動エネルギーの変化なし
-			uopt_kin = 0.0;
-		}
-		else if(obj->s == state::d2){
-			//加熱
-			uopt_kin = uopt1 - uopt2;
-		}
-		else {
-			//加熱
-			uopt_kin = uopt1 - uopt3;
-		}
-		obj->s = state::d1;
-	}
-	else{
-
-		// |2,n-1>への自然放出
-		if (obj->s == state::d1) {
-			//冷却
-			uopt_kin = uopt2 - uopt1;
-		}
-		else if (obj->s == state::d2) {
-			//変化なし
-			uopt_kin = 0.0;
-		}
-		else {
-			//加熱
-			uopt_kin = uopt2 - uopt3;
-		}
-		obj->s = state::d2;
-	}
-
-	// 運動エネルギーの変化
-	obj->v.vx = 0.0;
-	obj->v.vy = 0.0;
 
 }

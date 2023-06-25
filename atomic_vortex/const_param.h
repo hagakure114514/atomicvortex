@@ -4,7 +4,7 @@
 #include <corecrt_math_defines.h>
 
 //===定数=================================================================================================================================
-const double hbar = 1.0545e-34;		//Dirac constant[Js]
+const double hbar = 1.0545e-34;			//Dirac constant[Js]
 const double h = 6.626070e-34;			//Planck constant[Js]
 const double e0 = 8.85418e-12;			//誘電率
 const double c = 2.99792458e+8;			//light speed in vacuum[m/s]
@@ -15,9 +15,8 @@ const double delta_hfs = 6.834682610904e+9 * 2.0 * M_PI;				//frequency between 
 const double branch = 0.75;												//branching ratio into |1>(lower hyperfine ground state) (based on "Gravitational laser trap for atoms with evanescent-wave cooling" pp.654, 661)
 const double gamma = 38.1e+6;										//natural linewidth of D2 line[rad/s]
 
-//===LGビーム パラーメーター=================================================================================================================================
-const int l = 1;			//方位角モード指数
-const int p = 0;			//動径方向モード
+//===光渦 パラーメーター=================================================================================================================================
+const int l = 1;				//方位角モード指数
 const int prop = -1;			//ビームの進行方向 -1:-z方向, +1:+z方向
 const double detuning0 = 2.0 * M_PI * 1e9;			//離調 Δ=ω-ω_0 [rad/s]
 const double lambda = c / (384.26e12 + detuning0 / (2.0 * M_PI));				//wavelength of detuned D2 line[m]

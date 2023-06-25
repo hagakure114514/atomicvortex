@@ -26,7 +26,7 @@ private:
 	const double I_s1 = M_PI * h * c * gamma1 / (3.0 * lambda1 * lambda1 * lambda1);	//saturation intensity (|1>)[W/m^2]
 	const double I_s2 = M_PI * h * c * gamma2 / (3.0 * lambda2 * lambda2 * lambda2);	//saturation intensity (|2>)[W/m^2]
 	
-	double factorial(int x);
+	// double factorial(int x);
 	double intensity(double x);										// intensity of Optical Vortex
 	void detuning_doppler(atom* obj);								// detuning doppler shift [rad/s]
 	double s1(double x);											// saturation parameter between |g1> and |e>
