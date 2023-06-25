@@ -29,7 +29,7 @@ private:
 	
 	// double factorial(int x);
 	double intensity(double x);										// intensity of Optical Vortex
-	void detuning_doppsler(atom* obj);								// detuning doppler shift [rad/s]
+	void detuning_doppler(atom* obj);								// detuning doppler shift [rad/s]
 	double s1(double x);											// saturation parameter between |g1> and |e>
 	double s2(double x);											// saturation parameter between |g2> and |e>
 	double grad_s1(double x);										// gradient of saturation parameter between |g1> and |e>

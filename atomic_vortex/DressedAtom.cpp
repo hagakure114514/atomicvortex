@@ -55,7 +55,7 @@ void DressedAtom::step_motion(atom* obj)
 {
 	obj->r.x += 1.0 / 2.0 * obj->acc_x * dt * dt + obj->v.vx * dt;
 	obj->r.y += 1.0 / 2.0 * obj->acc_y * dt * dt + obj->v.vy * dt;
-	obj->r.z += 1.0 / 2.0 * (obj->acc_z - G) * dt * dt + obj->v.vz * dt;
+	obj->r.z += obj->v.vz * dt;
 
 	obj->v.vx += obj->acc_x * dt;
 	obj->v.vy += obj->acc_y * dt;
@@ -242,33 +242,33 @@ void DressedAtom::recoil_diss(atom* obj)
 	double p_recoil = dist(rand_src);
 
 	switch(flag_sp){
-		case 0:		//no momentum change
-			obj->v.vx += 0.0;
-			obj->v.vy += 0.0;
-			obj->v.vz += 0.0;
+	case 0: {		//no momentum change
+		obj->v.vx += 0.0;
+		obj->v.vy += 0.0;
+		obj->v.vz += 0.0;
+	}
+	case 1: {		// wavevector direction
+		double k_recoil = (dist(rand_src) > 0.5) ? k_wave * 1.0 : k_wave * -1.0;
+		obj->v.vx += 0.0;
+		obj->v.vy += 0.0;
+		obj->v.vz += hbar * k_wave / mass + hbar * k_recoil;
+	}
+	case 2: {		// dipole radiation direction
+		double sp2_psi = 2.0 * M_PI * dist(rand_src);	//psi around polarization axis
+		double sp2_theata = M_PI * dist(rand_src);
 
-		case 1:		// wavevector direction
-			double k_recoil = (dist(rand_src)>0.5)? k_wave*1.0: k_wave*-1.0;
-			obj->v.vx += 0.0;
-			obj->v.vy += 0.0;
-			obj->v.vz += hbar * k_wave / mass + hbar * k_recoil;
+		obj->v.vx += 0.0;
+		obj->v.vy += 0.0;
+		obj->v.vz += hbar * k_wave / mass + hbar * k_wave;
+	}
+	default: {
+		double sp_psi = 2.0 * M_PI * dist(rand_src);			//©‘R•úo‚Ì•ûˆÊŠp
+		double sp_theata = M_PI * dist(rand_src);			//©‘R•úo‚Ì‹ÂŠp
 
-		case 2:		// dipole radiation direction
-			double sp_psi = 2.0 * M_PI * dist(rand_src);	//psi around polarization axis
-			double sp_theata = M_PI * dist(rand_src);
-
-			obj->v.vx += 0.0;
-			obj->v.vy += 0.0;
-			obj->v.vz += hbar * k_wave / mass + hbar * k_wave;
-
-		default:
-			double sp_psi = 2.0 * M_PI * dist(rand_src);			//©‘R•úo‚Ì•ûˆÊŠp
-			double sp_theata = M_PI * dist(rand_src);			//©‘R•úo‚Ì‹ÂŠp
-
-			obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass - hbar * l / (obj->radius) * sin(obj->radius) / mass;
-			obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass + hbar * l / (obj->radius) * cos(obj->radius) / mass;
-			obj->v.vz += hbar * k_wave / mass + hbar * k_wave  * cos(sp_theata) / mass;
-
+		obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass - hbar * l / (obj->radius) * sin(obj->radius) / mass;
+		obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass + hbar * l / (obj->radius) * cos(obj->radius) / mass;
+		obj->v.vz += hbar * k_wave / mass + hbar * k_wave * cos(sp_theata) / mass;
+	}
 	}
 
 	if (obj->s == state::d1) {

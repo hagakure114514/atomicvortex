@@ -61,7 +61,7 @@ int main()
 		ofs << x[i] << ", " << y[i] << ", " << z[i] << endl;
     }
 
-	printf("spontaneous_emission_%d_times\n", OV1.count_sp);
+	printf("spontaneous emission %d times\n", OV1.count_sp);
 
     return 0;
 }
