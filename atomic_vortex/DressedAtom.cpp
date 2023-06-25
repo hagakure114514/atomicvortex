@@ -8,6 +8,23 @@ DressedAtom::DressedAtom()
 
 }
 
+// Repump
+void DressedAtom::process_repump(atom* obj)
+{
+	if(obj->s == state::d2){
+		std::mt19937 rand_src(std::random_device{}());
+		std::uniform_real_distribution<double> dist(0.0, 1.0);
+
+		double psp_pm = dist(rand_src);			//自然放出確率のダイス
+		double p1 = branch * (1.0 - exp( - gamma * s1_pm(obj->radius) * dt / 2.0));
+
+		if (psp_pm<=p1) {
+			obj->s = state::d1;
+
+		}
+	}
+}
+
 // Optcal potential
 void DressedAtom::process_dipole(atom* obj)
 {
@@ -187,7 +204,6 @@ void DressedAtom::force_dip(atom* obj)
 // 		obj->acc_x += -F_diss * sin(obj->phi) * l/(obj->radius) / mass;
 // 		obj->acc_y += F_diss * cos(obj->phi) * l/(obj->radius) / mass;
 // 		obj->acc_z += F_diss * abs(k_wave) / mass;
-
 // }
 
 // 自然放出
@@ -205,22 +221,17 @@ bool DressedAtom::spontaneous_emission(atom* obj)
 		double p1 = 1.0 - exp(-gamma * s1(obj->radius) * dt / 2.0);
 
 		p = psp<=p1 ? 1 : 0;
-
 	}
 	else if (obj->s == state::d2) {
 		double p2 = 1.0 - exp(-gamma * s2(obj->radius) * dt / 2.0);
 
 		p = psp<=p2 ? 1 : 0;
-
 	}
 	else {
 		// |3> は自然放出を起こさない。
 		p = 0;
-
 	}
-
 	return p;
-
 }
 
 // 自然放出の反跳
@@ -271,11 +282,13 @@ void DressedAtom::recoil_diss(atom* obj)
 
 			double uopt1 = 2.0/3.0 * hbar * detuning / 2.0 * log(1.0+s1(obj->radius));
 			double uopt2 = 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 * log(1.0+s2(obj->radius));
-			double Kin_r = ;
+			double dK = uopt1 - uopt2;
+			double K_r = 1.0/2.0 * mass * ((obj->v.vx*cos(obj->phi))*(obj->v.vx*cos(obj->phi))+(obj->v.vy*sin(obj->phi))*(obj->v.vy*sin(obj->phi)));
+			double tau = K_r-dK > 0? (K_r-dK)/K_r : 0.0;
 
 			// 運動エネルギーの変化
-			obj->v.vx = 0.0;
-			obj->v.vy = 0.0;
+			obj->v.vx *= (cos(obj->phi)*cos(obj->phi)*tau+sin(obj->phi)*sin(obj->phi));
+			obj->v.vy *= (cos(obj->phi)*cos(obj->phi)+sin(obj->phi)*sin(obj->phi)*tau);
 		}
 	}else{
 		if (p_recoil <= branch) {
@@ -286,6 +299,20 @@ void DressedAtom::recoil_diss(atom* obj)
 			obj->s = state::d2;
 		}
 	}
-	
-
 }
+
+// saturation parameter between |g1> and |e>
+double DressedAtom::s1_pm(double x)
+{
+	// Gaussian Electric Field: E0 *exp(-r^2/w0_pm^2)
+	double I0 = sqrt( 2.0 ) * beam_power_pm / (w0_pm * sqrt(M_PI * w0));	//beam intensity coefficient [V/m]
+	double ints = I0 * exp(-2.0*x * x / (w0_pm * w0_pm));			// intensity [V/m]
+
+	double s = intensity(x) / (I_s1 * (1.0 + 4.0 * detuning_pm * detuning_pm / (gamma1 * gamma1)));
+	
+	if (s > 0.1) {
+		printf("s parameter of pm is error %e\n", s);
+	}
+	
+	return s;
+} 

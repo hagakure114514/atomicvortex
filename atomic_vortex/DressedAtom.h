@@ -7,6 +7,7 @@
 class DressedAtom
 {
 public:
+	void process_repump(atom *obj);
 	void process_dipole(atom *obj);
 	void process_diss(atom* obj);
 	void step_motion(atom* obj);
@@ -28,7 +29,7 @@ private:
 	
 	// double factorial(int x);
 	double intensity(double x);										// intensity of Optical Vortex
-	void detuning_doppler(atom* obj);								// detuning doppler shift [rad/s]
+	void detuning_doppsler(atom* obj);								// detuning doppler shift [rad/s]
 	double s1(double x);											// saturation parameter between |g1> and |e>
 	double s2(double x);											// saturation parameter between |g2> and |e>
 	double grad_s1(double x);										// gradient of saturation parameter between |g1> and |e>
@@ -38,5 +39,7 @@ private:
 	bool spontaneous_emission(atom* obj);							// spontaneous emission
 	void recoil_diss(atom* obj);									// recoil of spontaneous emission
 	// void sisyphus_cooling(atom* obj);								// sisyphus cooling
+
+	double s1_pm(double x);											// saturation parameter between |g1> and |e> of repump
 };
 
