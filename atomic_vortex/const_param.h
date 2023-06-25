@@ -24,6 +24,13 @@ const double w0 = 2e-3;			//ビーム幅[m]
 const double beam_power = 300e-3;			//ビーム出力[W]
 
 
+//===リポンプ光 パラーメーター=================================================================================================================================
+const double detuning_pm = 2.0 * M_PI * 1e9;			//離調 [rad/s]
+const double lambda_pm = lambda;						//wavelength of detuned D2 line[m]
+const double w0_pm = 5e-3;								//ビーム幅[m]
+const double beam_power_pm = 10e-3;						//ビーム出力[W]
+
+
 //===冷却原子団 パラメーター=================================================================================================================================
 const double r0 = 1.0e-3;												//MOT radius[m]
 const double temp = 10.0e-6;										//temperature of MOT[K]

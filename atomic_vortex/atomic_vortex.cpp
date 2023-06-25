@@ -26,7 +26,7 @@ int main()
 	// オブジェクトのコンストラクタ
 	position r0={ 0.0, 50.0e-6, 0.0};
 	velocity v0={ 1.0e-2, 0.0, 0.0};
-    atom Rb87(r0, v0, state::d2);		// 原子オブジェクト
+    atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
     atom* rb87 = &Rb87;
     DressedAtom OV1;			// dressed-atom状態オブジェクト
 	OV1.flag_sp = (int)c;
@@ -39,6 +39,7 @@ int main()
 	int lim=0;
     for (int i = 0; i <= jloop; i++) {
 		lim = i;
+		OV1.process_repump(rb87);
         OV1.process_dipole(rb87);
         OV1.process_diss(rb87);
         OV1.step_motion(rb87);
