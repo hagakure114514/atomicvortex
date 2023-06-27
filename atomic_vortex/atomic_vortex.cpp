@@ -14,11 +14,6 @@ using std::ofstream;
 
 int main()
 {
-	// spontaneous emission mode  
-    printf("select spontaneous emission mode?\n 0:no-sp, 1:z-axis-sp, 2:dipole-radiation, 3:all direction \n");
-    char c = std::cin.get();
-	
-
 	char fname[30];
 	sprintf_s(fname, "traj_pos50_vel0.csv");
 	ofstream ofs(fname);        // ファイルパスを指定する
@@ -29,12 +24,18 @@ int main()
     atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
     atom* rb87 = &Rb87;
     DressedAtom OV1;			// dressed-atom状態オブジェクト
-	OV1.flag_sp = (int)c;
-
 
     // 配列の定義
     double x[jloop + 1] = {}, y[jloop + 1] = {}, z[jloop+1] = {};
+    double E[jloop + 1] = {};											// 運動エネルギー　+　光ポテンシャル + 位置エネルギー
 
+
+
+	// spontaneous emission mode  
+	printf("select spontaneous emission mode?\n 0:no-sp, 1:z-axis-sp, 2:dipole-radiation, 3:all direction \n");
+	std::cin >> OV1.flag_sp;
+
+    
     // 時間ステップごとの運動
 	int lim=0;
     for (int i = 0; i <= jloop; i++) {
@@ -43,8 +44,10 @@ int main()
         OV1.process_dipole(rb87);
         OV1.process_diss(rb87);
         OV1.step_motion(rb87);
+        OV1.calc_energy(rb87);
 
         x[i] = rb87->r.x;  y[i] = rb87->r.y;  z[i] = rb87->r.z;
+        E[i]= rb87->E_kin;
 
 		if (z[i] < -0.30) {
 			lim = i - 1;
@@ -57,8 +60,7 @@ int main()
 			break;
 		}
 
-		//printf("%e, %e, %e\n", x[i], y[i], z[i]);
-		ofs << x[i] << ", " << y[i] << ", " << z[i] << endl;
+		ofs << x[i] << ", " << y[i] << ", " << z[i] << ", " << E[i] << endl;
     }
 
 	printf("spontaneous emission %d times\n", OV1.count_sp);

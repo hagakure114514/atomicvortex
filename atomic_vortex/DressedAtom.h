@@ -11,11 +11,12 @@ public:
 	void process_dipole(atom *obj);
 	void process_diss(atom* obj);
 	void step_motion(atom* obj);
+	void calc_energy(atom* obj);
 	
 	DressedAtom();
-	int flag_sp = 3;
-	int count_sp = 0;
-	int life_sp = 1;
+	int flag_sp;
+	int count_sp;
+	int life_sp;
 
 private:
 	double detuning;			//detuning between |e> and |g1> [rad/s]

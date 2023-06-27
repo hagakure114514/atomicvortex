@@ -2,7 +2,9 @@
 
 DressedAtom::DressedAtom()
 {
-
+	flag_sp = 3;
+	count_sp = 0;
+	life_sp = 1;
 	detuning = detuning0;			//detuning between |e> and |g1>
 	srand((unsigned)time(NULL));	//a magic phrase to make random numbers be based on time
 
@@ -316,3 +318,12 @@ double DressedAtom::s1_pm(double x)
 	
 	return s;
 } 
+
+
+// Calculate atom energy
+void DressedAtom::calc_energy(atom* obj)
+{
+	double Uopt = obj->s == state::d1? 2.0/3.0 * hbar * detuning / 2.0 *  log(1.0+s1(obj->radius)): 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 *  log(1.0+s2(obj->radius));
+	obj->E_kin=1.0/3.0 * mass/k_b  *( obj->v.vx * obj->v.vx + obj->v.vy* obj->v.vy);
+
+}
