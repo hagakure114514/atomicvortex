@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <corecrt_math_defines.h>
 
-//===’è”=================================================================================================================================
+//===â€™Ã¨Ââ€=================================================================================================================================
 const double hbar = 1.0545e-34;			//Dirac constant[Js]
 const double h = 6.626070e-34;			//Planck constant[Js]
-const double e0 = 8.85418e-12;			//—U“d—¦
+const double e0 = 8.85418e-12;			//â€”Uâ€œdâ€”Â¦
 const double c = 2.99792458e+8;			//light speed in vacuum[m/s]
 const double mass = 1.40999e-25;		//mass of Rb[kg]
 const double k_b = 1.380649e-23;		//Boltzmann const.[J/K]
@@ -15,34 +15,35 @@ const double delta_hfs = 6.834682610904e+9 * 2.0 * M_PI;				//frequency between 
 const double branch = 0.75;												//branching ratio into |1>(lower hyperfine ground state) (based on "Gravitational laser trap for atoms with evanescent-wave cooling" pp.654, 661)
 const double gamma = 38.1e+6;										//natural linewidth of D2 line[rad/s]
 
-//===Œõ‰Q ƒpƒ‰[ƒ[ƒ^[=================================================================================================================================
-const int l = 1;				//•ûˆÊŠpƒ‚[ƒhŽw”
-const int prop = -1;			//ƒr[ƒ€‚Ìis•ûŒü -1:-z•ûŒü, +1:+z•ûŒü
-const double detuning0 = 2.0 * M_PI * 1e9;			//—£’² ƒ¢=ƒÖ-ƒÖ_0 [rad/s]
+//===Å’Ãµâ€°Q Æ’pÆ’â€°Â[Æ’ÂÂ[Æ’^Â[=================================================================================================================================
+const int l = 1;				//â€¢Ã»Ë†ÃŠÅ pÆ’â€šÂ[Æ’hÅ½wÂâ€
+const int prop = -1;			//Æ’rÂ[Æ’Â€â€šÃŒÂiÂsâ€¢Ã»Å’Ã¼ -1:-zâ€¢Ã»Å’Ã¼, +1:+zâ€¢Ã»Å’Ã¼
+const double detuning0 = 2.0 * M_PI * 1e9;			//â€”Â£â€™Â² Æ’Â¢=Æ’Ã–-Æ’Ã–_0 [rad/s]
 const double lambda = c / (384.26e12 + detuning0 / (2.0 * M_PI));				//wavelength of detuned D2 line[m]
-const double w0 = 2e-3;			//ƒr[ƒ€•[m]
-const double beam_power = 300e-3;			//ƒr[ƒ€o—Í[W]
+const double w0 = 2e-3;			//Æ’rÂ[Æ’Â€â€¢Â[m]
+const double beam_power = 300e-3;			//Æ’rÂ[Æ’Â€Âoâ€”Ã[W]
 
 
-//===ƒŠƒ|ƒ“ƒvŒõ ƒpƒ‰[ƒ[ƒ^[=================================================================================================================================
-const double detuning_pm = 2.0 * M_PI * 1e9;			//—£’² [rad/s]
+//===Æ’Å Æ’|Æ’â€œÆ’vÅ’Ãµ Æ’pÆ’â€°Â[Æ’ÂÂ[Æ’^Â[=================================================================================================================================
+const double detuning_pm = 2.0 * M_PI * 1e9;			//â€”Â£â€™Â² [rad/s]
 const double lambda_pm = lambda;						//wavelength of detuned D2 line[m]
-const double w0_pm = 5e-3;								//ƒr[ƒ€•[m]
-const double beam_power_pm = 10e-3;						//ƒr[ƒ€o—Í[W]
+const double w0_pm = 5e-3;								//Æ’rÂ[Æ’Â€â€¢Â[m]
+const double beam_power_pm = 10e-3;						//Æ’rÂ[Æ’Â€Âoâ€”Ã[W]
 
 
-//===—â‹pŒ´Žq’c ƒpƒ‰ƒ[ƒ^[=================================================================================================================================
+//===â€”Ã¢â€¹pÅ’Â´Å½qâ€™c Æ’pÆ’â€°Æ’ÂÂ[Æ’^Â[=================================================================================================================================
 const double r0 = 1.0e-3;												//MOT radius[m]
 const double temp = 10.0e-6;										//temperature of MOT[K]
+const double v_max = 0.15;
 
-
-//===ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ ƒpƒ‰ƒ[ƒ^[=================================================================================================================================
+//===Æ’VÆ’~Æ’â€¦Æ’Å’Â[Æ’VÆ’â€¡Æ’â€œ Æ’pÆ’â€°Æ’ÂÂ[Æ’^Â[=================================================================================================================================
 const int SAMPLE = 1000;											//number of sample atoms[-]
 const int jloop = 20000;										//how many times the time t is advanced[-]
 const double dt = 2.0e-5;											//interval time[s]
+int flag_mode = 0;
 
 
-//==\‘¢‘Ì=================================================================================================================================
+//==Â\â€˜Â¢â€˜ÃŒ=================================================================================================================================
 enum class state { d1, d2, d3 };			// |d1>=|g1,n>, |d2>=|g2,n>, |d3>=|e, n-1>
 
 typedef struct {
@@ -52,3 +53,10 @@ typedef struct {
 typedef struct {
 	double vx; double vy; double vz;
 }velocity;
+
+
+//==kikyakuhou function=================================================================================================================================
+void gauss(double* x);
+void max_boltz(double* v);
+void rm_position(double* x);
+void rm_velocity(double* x);
