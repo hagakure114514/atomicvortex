@@ -14,6 +14,7 @@ using std::ofstream;
 
 int main()
 {
+	int flag_mode = 0;
 
 	printf("select simulation mode?\n 0:trajectory of an atom, 1:molasess \n");
 	std::cin >> flag_mode;
@@ -35,7 +36,7 @@ int main()
 	    double E[jloop + 1] = {};											// 運動エネルギー　+　光ポテンシャル + 位置エネルギー
 
 		// spontaneous emission mode  
-		printf("select spontaneous emission mode?\n 0:no-sp, 1:z-axis-sp, 2:dipole-radiation, 3:all direction \n");
+		printf("select spontaneous emission mode?\n 0:no OAM, 1:z-axis-sp, 2:dipole-radiation, 3:all direction \n");
 		std::cin >> OV1.flag_sp;
 
 	    
@@ -70,60 +71,72 @@ int main()
 
 	}else{
 
+		char fname[30];
+		sprintf_s(fname, "stat_azimuthal_vel.csv");
+		ofstream ofs(fname);        // ファイルパスを指定する
+
 	   	// 変数の定義
 	   	//double sum_temp=0.0;
 	   	int flag_sp_tmp;
 	   	int sum_sp=0;
-	   	int count_vphi=0;
+	   	int count_vphi = 0;
 
 	    // spontaneous emission mode  
-		printf("select spontaneous emission mode?\n 0:no-sp, 1:z-axis-sp, 2:dipole-radiation, 3:all direction \n");
+		printf("select spontaneous emission mode?\n 0:no OAM, 1:z-axis-sp, 2:dipole-radiation, 3:all direction \n");
 		std::cin >> flag_sp_tmp;
 
 	    // 配列の定義
 	    double x0[SAMPLE + 1] = {}, y0[SAMPLE + 1] = {}, z0[SAMPLE + 1] = {};
 	    double vx0[SAMPLE + 1] = {}, vy0[SAMPLE + 1] = {}, vz0[SAMPLE + 1] = {};
 
-	    rm_position(&x0, &y0, &z0);
-		rm_velocity(&vx0, &vy0, &vz0);
+	    rm_position(x0, y0, z0);
+		rm_velocity(vx0, vy0, vz0);
 
-	    for(int m=0; m<SAMPLE; m++){
-	    	position r0={ x0[m], y0[m], z0[m]};
-			velocity v0={ vx0[m], vy0[m], vz0[m]};
+		printf("simulation execution\n");
 
-			// オブジェクトのコンストラクタ
-		    atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
-		    atom* rb87 = &Rb87;
-		    DressedAtom OV1;			// dressed-atom状態オブジェクト
-		    OV1.flag_sp=flag_sp_tmp;
+		for (int jj = 0; jj < 100; jj++) {
+			for (int m = 0; m < SAMPLE; m++) {
+				position r0 = { x0[m], y0[m], z0[m] };
+				velocity v0 = { vx0[m], vy0[m], vz0[m] };
 
-	    	// 時間ステップごとの運動
-		    for (int i = 0; i <= jloop; i++) {
-				OV1.process_repump(rb87);
-		        OV1.process_dipole(rb87);
-		        OV1.process_diss(rb87);
-		        OV1.step_motion(rb87);
-		        OV1.calc_energy(rb87);
+				// オブジェクトのコンストラクタ
+				atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
+				atom* rb87 = &Rb87;
+				DressedAtom OV1;			// dressed-atom状態オブジェクト
+				OV1.flag_sp = flag_sp_tmp;
 
-				if (rb87->r.z < -0.30) {
-					break;
+				// 時間ステップごとの運動
+				for (int i = 0; i <= jloop; i++) {
+					OV1.process_repump(rb87);
+					OV1.process_dipole(rb87);
+					OV1.process_diss(rb87);
+					OV1.step_motion(rb87);
+
+					if (rb87->r.z < -0.30) {
+						break;
+					}
+
+					if (rb87->radius > w0 / sqrt(2.0)) {
+						break;
+					}
 				}
 
-				if (rb87->radius > w0/sqrt(2.0)) {
-					break;
-				}
-		    }
+				double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi);
 
-		    double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi);
-		    
-		    if(vphi>0)	count_vphi++;
-		    sum_sp+=OV1.count_sp;
+				if (vphi > 0)	count_vphi++;
+				sum_sp += OV1.count_sp;
 
-	    }
+			}
+
+			printf("avarage spontaneous emission %d/%d times, ", sum_sp, SAMPLE);
+			printf("velocity of azimuthal direction %d/%d \n", count_vphi, SAMPLE);
+
+			ofs << (double)count_vphi/(double)SAMPLE << endl;
+
+			sum_sp = 0;
+			count_vphi = 0;
+		}
 	    
-		//printf("avarage temperature %e mK\n", );
-		printf("avarage spontaneous emission %d/%d times\n",  sum_sp, SAMPLE);
-		printf("velocity of azimuthal direction %d/%d \n", count_vphi, SAMPLE);
 
 	    return 0;
 	}
@@ -164,9 +177,9 @@ void rm_position(double* x, double* y, double* z){
 		double phi = 2.0 * M_PI * dist(rand_src);
     	double psi = M_PI * dist(rand_src);
 
-		*x[j] = r0* cos(phi) * sin(psi);
-		*y[j] = r0* sin(phi) * sin(psi);
-		*z[j] = r0* cos(psi);
+		x[j] = r0* cos(phi) * sin(psi);
+		y[j] = r0* sin(phi) * sin(psi);
+		z[j] = r0* cos(psi);
 	}
 }
 
@@ -181,8 +194,8 @@ void rm_velocity(double* vx, double* vy, double* vz){
 		double phi = 2.0 * M_PI * dist(rand_src);
     	double psi = M_PI * dist(rand_src);
 
-		*vx[j] = v0* cos(phi) * sin(psi);
-		*vy[j] = v0* sin(phi) * sin(psi);
-		*vz[j] = v0* cos(psi);
+		vx[j] = v0* cos(phi) * sin(psi);
+		vy[j] = v0* sin(phi) * sin(psi);
+		vz[j] = v0* cos(psi);
 	}
 }

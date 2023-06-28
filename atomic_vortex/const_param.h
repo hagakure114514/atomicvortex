@@ -40,7 +40,6 @@ const double v_max = 0.15;
 const int SAMPLE = 1000;											//number of sample atoms[-]
 const int jloop = 20000;										//how many times the time t is advanced[-]
 const double dt = 2.0e-5;											//interval time[s]
-int flag_mode = 0;
 
 
 //==\‘¢‘Ì=================================================================================================================================
@@ -58,5 +57,5 @@ typedef struct {
 //==kikyakuhou function=================================================================================================================================
 void gauss(double* x);
 void max_boltz(double* v);
-void rm_position(double* x);
-void rm_velocity(double* x);
+void rm_position(double* x, double* y, double* z);
+void rm_velocity(double* vx, double* vy, double* vz);
