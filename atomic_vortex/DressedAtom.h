@@ -20,7 +20,7 @@ public:
 
 private:
 	double detuning;			//detuning between |e> and |g1> [rad/s]
-	double k_wave = prop * 2.0 * M_PI / lambda;								//wavenumber[/m]
+	double k_wave = 2.0 * M_PI / lambda;								//wavenumber[/m]
 	const double gamma1 = gamma * branch;									//spontaneous decay rate between |e> and |1>[rad/s]
 	const double gamma2 = gamma * (1.0 - branch);							//spontaneous decay rate between |e> and |2>[rad/s]
 	const double lambda1 = 780.2e-9;								//wavelength between |e> and |g1>[m]
