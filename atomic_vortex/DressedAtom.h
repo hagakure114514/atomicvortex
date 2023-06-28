@@ -36,10 +36,8 @@ private:
 	double grad_s1(double x);										// gradient of saturation parameter between |g1> and |e>
 	double grad_s2(double x);										// gradient of saturation parameter between |g2> and |e>
 	void force_dip(atom* obj);										// Optical potential
-	// void force_diss(atom* obj);										// dissipative force
 	bool spontaneous_emission(atom* obj);							// spontaneous emission
 	void recoil_diss(atom* obj);									// recoil of spontaneous emission
-	// void sisyphus_cooling(atom* obj);								// sisyphus cooling
 
 	double s1_pm(double x);											// saturation parameter between |g1> and |e> of repump
 };

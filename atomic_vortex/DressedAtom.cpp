@@ -23,6 +23,39 @@ void DressedAtom::process_repump(atom* obj)
 		if (psp_pm<=p1) {
 			obj->s = state::d1;
 
+			switch (flag_sp) {
+			case 0: {		//no OAM mode
+				double k_recoil = (dist(rand_src) > 0.5) ? k_wave * 1.0 : k_wave * -1.0;
+				obj->v.vx += 0;
+				obj->v.vy += 0;
+				obj->v.vz += -hbar * k_wave / mass + hbar * k_recoil / mass;
+			}
+			case 1: {		// wavevector direction
+				double k_recoil = (dist(rand_src) > 0.5) ? k_wave * 1.0 : k_wave * -1.0;
+				obj->v.vx += 0;
+				obj->v.vy += 0;
+				obj->v.vz += -hbar * k_wave / mass + hbar * k_recoil / mass;
+			}
+			case 2: {		// dipole radiation direction
+				double sp2_psi = 2.0 * M_PI * dist(rand_src);	//psi around polarization axis
+				double sp2_theata = M_PI * dist(rand_src);
+
+				double k_recoil = (dist(rand_src) > 0.5) ? k_wave * 1.0 : k_wave * -1.0;
+				obj->v.vx += 0;
+				obj->v.vy += 0;
+				obj->v.vz += -hbar * k_wave / mass + hbar * k_recoil / mass;
+			}
+			default: {
+				double sp_psi = 2.0 * M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì•ûˆÊŠp
+				double sp_theata = M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì‹ÂŠp
+
+				obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
+				obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
+				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata) / mass;
+			}
+			}
+			count_sp++;
+
 		}
 	}
 }
@@ -30,7 +63,7 @@ void DressedAtom::process_repump(atom* obj)
 // Optcal potential
 void DressedAtom::process_dipole(atom* obj)
 {
-	// 
+
 	detuning_doppler(obj);
 	force_dip(obj);
 }
@@ -53,13 +86,13 @@ void DressedAtom::process_diss(atom* obj)
 // motion within a time step dt
 void DressedAtom::step_motion(atom* obj)
 {
-	obj->r.x += 1.0 / 2.0 * obj->acc_x * dt * dt + obj->v.vx * dt;
-	obj->r.y += 1.0 / 2.0 * obj->acc_y * dt * dt + obj->v.vy * dt;
-	obj->r.z += obj->v.vz * dt;
-
 	obj->v.vx += obj->acc_x * dt;
 	obj->v.vy += obj->acc_y * dt;
 	obj->v.vz += (obj->acc_z - G) * dt;
+	
+	obj->r.x += obj->v.vx * dt;
+	obj->r.y += obj->v.vy * dt;
+	obj->r.z += obj->v.vz * dt;
 
 	obj->radius_pre = obj->radius;
 	obj->radius = sqrt(obj->r.x * obj->r.x + obj->r.y * obj->r.y);
@@ -217,13 +250,13 @@ void DressedAtom::recoil_diss(atom* obj)
 		double k_recoil = (dist(rand_src) > 0.5) ? k_wave * 1.0 : k_wave * -1.0;
 		obj->v.vx += 0;
 		obj->v.vy += 0;
-		obj->v.vz += hbar * k_wave / mass + hbar * k_recoil / mass;
+		obj->v.vz += hbar * k_wave / mass - hbar * k_recoil / mass;
 	}
 	case 1: {		// wavevector direction
 		double k_recoil = (dist(rand_src) > 0.5) ? k_wave * 1.0 : k_wave * -1.0;
 		obj->v.vx += - hbar * l / (obj->radius) * sin(obj->radius) / mass;
 		obj->v.vy += hbar * l / (obj->radius) * cos(obj->radius) / mass;
-		obj->v.vz += hbar * k_wave / mass + hbar * k_recoil / mass;
+		obj->v.vz += hbar * k_wave / mass - hbar * k_recoil / mass;
 	}
 	case 2: {		// dipole radiation direction
 		double sp2_psi = 2.0 * M_PI * dist(rand_src);	//psi around polarization axis
@@ -237,9 +270,9 @@ void DressedAtom::recoil_diss(atom* obj)
 		double sp_psi = 2.0 * M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì•ûˆÊŠp
 		double sp_theata = M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì‹ÂŠp
 
-		obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass - hbar * l / (obj->radius) * sin(obj->radius) / mass;
-		obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass + hbar * l / (obj->radius) * cos(obj->radius) / mass;
-		obj->v.vz += hbar * k_wave / mass + hbar * k_wave * cos(sp_theata) / mass;
+		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass - hbar * l / (obj->radius) * sin(obj->radius) / mass;
+		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass + hbar * l / (obj->radius) * cos(obj->radius) / mass;
+		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
 	}
 	}
 
