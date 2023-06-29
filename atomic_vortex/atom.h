@@ -8,11 +8,12 @@ class atom
 public:
 	position r;
 	velocity v;
+	velocity v_pre;
 	state s;
 	double radius;
 	double radius_pre;
 	double phi;
-	double acc_x, acc_y, acc_z;
+	double acc_x, acc_y;
 	double E_kin = 0.0;
 
 	atom();

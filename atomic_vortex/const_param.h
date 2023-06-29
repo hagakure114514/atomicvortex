@@ -17,18 +17,17 @@ const double gamma = 38.1e+6;										//natural linewidth of D2 line[rad/s]
 
 //===Œõ‰Q ƒpƒ‰[ƒ[ƒ^[=================================================================================================================================
 const int l = 1;				//•ûˆÊŠpƒ‚[ƒhŽw”
-const int prop = -1;			//ƒr[ƒ‚Ìis•ûŒü -1:-z•ûŒü, +1:+z•ûŒü
 const double detuning0 = 2.0 * M_PI * 1e9;			//—£’² ƒ¢=ƒÖ-ƒÖ_0 [rad/s]
 const double lambda = c / (384.26e12 + detuning0 / (2.0 * M_PI));				//wavelength of detuned D2 line[m]
 const double w0 = 2e-3;			//ƒr[ƒ•[m]
-const double beam_power = 100e-3;			//ƒr[ƒo—Í[W]
+const double beam_power = 300e-3;			//ƒr[ƒo—Í[W]
 
 
 //===ƒŠƒ|ƒ“ƒvŒõ ƒpƒ‰[ƒ[ƒ^[=================================================================================================================================
 const double detuning_pm = 2.0 * M_PI * 1e9;			//—£’² [rad/s]
 const double lambda_pm = lambda;						//wavelength of detuned D2 line[m]
 const double w0_pm = 5e-3;								//ƒr[ƒ•[m]
-const double beam_power_pm = 10e-3;						//ƒr[ƒo—Í[W]
+const double beam_power_pm = 50e-3;						//ƒr[ƒo—Í[W]
 
 
 //===—â‹pŒ´Žq’c ƒpƒ‰ƒ[ƒ^[=================================================================================================================================
@@ -39,7 +38,7 @@ const double v_max = 0.15;
 //===ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ ƒpƒ‰ƒ[ƒ^[=================================================================================================================================
 const int SAMPLE = 1000;											//number of sample atoms[-]
 const int jloop = 20000;										//how many times the time t is advanced[-]
-const double dt = 2.0e-5;											//interval time[s]
+const double dt = 5.0e-5;											//interval time[s]
 
 
 //==\‘¢‘Ì=================================================================================================================================

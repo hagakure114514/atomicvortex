@@ -7,11 +7,12 @@ atom::atom() {
 	v.vx = 0.5e-3;
 	v.vy = 0.0;
 	v.vz = 0.0;
+	v_pre=v;
 	radius = sqrt(r.x * r.x + r.y * r.y);
 	radius_pre = radius;
 	phi = (r.x == 0 && r.y == 0) ? 0.0 : atan2(r.y, r.x);
-	acc_x = 0.0, acc_y = 0.0, acc_z = 0.0;
-	s = state::d2;
+	acc_x = 0.0, acc_y = 0.0;
+	s = state::d1;
 }
 
 
@@ -19,10 +20,11 @@ atom::atom(position r0, velocity v0, state s0) {
 	r = r0;
 	v = v0;
 	s = s0;
+	v_pre= v0;
 	radius = sqrt(r.x * r.x + r.y * r.y);
 	radius_pre = radius;
 	phi = (r.x == 0 && r.y == 0) ? 0.0 : atan2(r.y, r.x);
-	acc_x = 0.0, acc_y = 0.0, acc_z = 0.0;
+	acc_x = 0.0, acc_y = 0.0;
 }
 
 

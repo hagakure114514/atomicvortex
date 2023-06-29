@@ -84,6 +84,7 @@ int main()
 	    // spontaneous emission mode  
 		printf("select spontaneous emission mode?\n 0:no OAM, 1:z-axis-sp, 2:dipole-radiation, 3:all direction \n");
 		std::cin >> flag_sp_tmp;
+		printf("spontaneous mode %d\n", flag_sp_tmp);
 
 	    // 配列の定義
 	    double x0[SAMPLE + 1] = {}, y0[SAMPLE + 1] = {}, z0[SAMPLE + 1] = {};
@@ -196,6 +197,6 @@ void rm_velocity(double* vx, double* vy, double* vz){
 
 		vx[j] = v0* cos(phi) * sin(psi);
 		vy[j] = v0* sin(phi) * sin(psi);
-		vz[j] = v0* cos(psi);
+		vz[j] = - v0 * abs(cos(psi));
 	}
 }

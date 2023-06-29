@@ -2,7 +2,7 @@
 
 DressedAtom::DressedAtom()
 {
-	flag_sp = 3;
+	flag_sp = 1;
 	count_sp = 0;
 	life_sp = 1;
 	detuning = detuning0;			//detuning between |e> and |g1>
@@ -63,7 +63,6 @@ void DressedAtom::process_repump(atom* obj)
 // Optcal potential
 void DressedAtom::process_dipole(atom* obj)
 {
-
 	detuning_doppler(obj);
 	force_dip(obj);
 }
@@ -72,36 +71,34 @@ void DressedAtom::process_dipole(atom* obj)
 void DressedAtom::process_diss(atom* obj)
 {
 		// spontaneous emission occur
-		if (spontaneous_emission(obj) == 1) {
-			detuning_doppler(obj);
-			recoil_diss(obj);
-			count_sp++;
-		}
+	if (spontaneous_emission(obj) == 1) {
+		detuning_doppler(obj);
+		recoil_diss(obj);
+		count_sp++;
+	}
 
 }
-	
-
 
 
 // motion within a time step dt
 void DressedAtom::step_motion(atom* obj)
 {
+	obj->radius_pre = obj->radius;
+
 	obj->v.vx += obj->acc_x * dt;
 	obj->v.vy += obj->acc_y * dt;
-	obj->v.vz += (obj->acc_z - G) * dt;
-	
-	obj->r.x += obj->v.vx * dt;
-	obj->r.y += obj->v.vy * dt;
-	obj->r.z += obj->v.vz * dt;
+	obj->v.vz += - G * dt;
 
-	obj->radius_pre = obj->radius;
+	obj->r.x += 1.0/2.0 * (obj->v.vx + obj->v_pre.vx) * dt;
+	obj->r.y += 1.0/2.0 * (obj->v.vy + obj->v_pre.vy) * dt;
+	obj->r.z += 1.0/2.0 * (obj->v.vz + obj->v_pre.vz) * dt;
+
 	obj->radius = sqrt(obj->r.x * obj->r.x + obj->r.y * obj->r.y);
 	obj->phi = atan2(obj->r.y, obj->r.x);
 
+	obj->v_pre=obj->v;
 	obj->acc_x = 0.0;
 	obj->acc_y = 0.0;
-	obj->acc_z = 0.0;
-
 }
 
 
@@ -132,7 +129,7 @@ double DressedAtom::intensity(double x)
 void DressedAtom::detuning_doppler(atom* obj)
 {
 	double vphi = -(obj->v.vx) * sin(obj->phi) + (obj->v.vy) * cos(obj->phi);
-	detuning = detuning0 - k_wave * (obj->v.vz) - l * prop * vphi / (obj->radius);
+	detuning = detuning0 - k_wave * (obj->v.vz) + l * vphi / (obj->radius);
 }
 
 // saturation parameter between |g1> and |e>
@@ -177,35 +174,61 @@ double DressedAtom::grad_s2(double x)
 // 双極子ポテンシャルから受ける力
 void DressedAtom::force_dip(atom* obj)
 {
-	double dUopt = 0.0;
+	// double dUopt = 0.0;
+	// if (obj->s == state::d1) {
+	// 	dUopt = 2.0/3.0 * hbar * detuning / 2.0 * ( log(1.0+s1(obj->radius)) - log(1.0+s1(obj->radius_pre)) );
+	// }
+	// else if (obj->s == state::d2) {
+	// 	dUopt = 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 * ( log(1.0+s2(obj->radius)) - log(1.0+s2(obj->radius_pre)) );
+	// }
+	// else {
+		
+	// 	std::mt19937 rand_src(std::random_device{}());
+	// 	std::uniform_real_distribution<double> dist(0.0, 1.0);
+	// 	double p_diss = dist(rand_src);
+
+	// 	if (p_diss <= branch) {
+	// 		dUopt = 2.0/3.0 * hbar * detuning / 2.0 * ( log(1.0+s1(obj->radius)) - log(1.0+s1(obj->radius_pre)) );
+	// 		obj->s = state::d1;
+	// 	}
+	// 	else {
+	// 		dUopt = 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 * ( log(1.0+s2(obj->radius)) - log(1.0+s2(obj->radius_pre)) );
+	// 		obj->s = state::d2;
+	// 	}
+	// }
+
+	// if (obj->radius != obj->radius_pre)
+	// {
+	// 	double f_dip = -dUopt / (obj->radius - obj->radius_pre);
+	// 	obj->acc_x += f_dip * cos(obj->phi) / mass;
+	// 	obj->acc_y += f_dip * sin(obj->phi) / mass;
+	// }
+
+	double f_dip = 0.0;
 	if (obj->s == state::d1) {
-		dUopt = 2.0/3.0 * hbar * detuning / 2.0 * ( log(1.0+s1(obj->radius)) - log(1.0+s1(obj->radius_pre)) );
+		f_dip = - 2.0/3.0 * hbar * detuning / 2.0 * grad_s1(obj->radius)/(1.0+s1(obj->radius));
 	}
 	else if (obj->s == state::d2) {
-		dUopt = 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 * ( log(1.0+s2(obj->radius)) - log(1.0+s2(obj->radius_pre)) );
+		f_dip = - 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 * grad_s2(obj->radius) / (1.0+s2(obj->radius));
 	}
 	else {
-		
 		std::mt19937 rand_src(std::random_device{}());
 		std::uniform_real_distribution<double> dist(0.0, 1.0);
 		double p_diss = dist(rand_src);
 
 		if (p_diss <= branch) {
-			dUopt = 2.0/3.0 * hbar * detuning / 2.0 * ( log(1.0+s1(obj->radius)) - log(1.0+s1(obj->radius_pre)) );
+			f_dip = - 2.0/3.0 * hbar * detuning / 2.0 * grad_s1(obj->radius)/(1.0+s1(obj->radius));
 			obj->s = state::d1;
 		}
 		else {
-			dUopt = 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 * ( log(1.0+s2(obj->radius)) - log(1.0+s2(obj->radius_pre)) );
+			f_dip = - 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 * grad_s2(obj->radius) / (1.0+s2(obj->radius));
 			obj->s = state::d2;
 		}
 	}
 
-	if (obj->radius != obj->radius_pre)
-	{
-		double f_dip = -dUopt / (obj->radius - obj->radius_pre);
-		obj->acc_x += f_dip * cos(obj->phi) / mass;
-		obj->acc_y += f_dip * sin(obj->phi) / mass;
-	}
+	obj->acc_x += f_dip * cos(obj->phi) / mass;
+	obj->acc_y += f_dip * sin(obj->phi) / mass;
+
 }
 
 
