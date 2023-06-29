@@ -18,9 +18,9 @@ const double gamma = 38.1e+6;										//natural linewidth of D2 line[rad/s]
 //===Œõ‰Q ƒpƒ‰[ƒ[ƒ^[=================================================================================================================================
 const int l = 1;				//•ûˆÊŠpƒ‚[ƒhŽw”
 const double detuning0 = 2.0 * M_PI * 1e9;			//—£’² ƒ¢=ƒÖ-ƒÖ_0 [rad/s]
-const double lambda = c / (384.26e12 + detuning0 / (2.0 * M_PI));				//wavelength of detuned D2 line[m]
+const double lambda = c / (c / 780.2e-9 + detuning0 / (2.0 * M_PI));				//wavelength of detuned D2 line[m]
 const double w0 = 2e-3;			//ƒr[ƒ•[m]
-const double beam_power = 300e-3;			//ƒr[ƒo—Í[W]
+const double beam_power = 100e-3;			//ƒr[ƒo—Í[W]
 
 
 //===ƒŠƒ|ƒ“ƒvŒõ ƒpƒ‰[ƒ[ƒ^[=================================================================================================================================
