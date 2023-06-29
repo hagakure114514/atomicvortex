@@ -1,0 +1,16 @@
+各ファイルの説明
+
+【countif.cpp】
+beam_power.cppなどの各種シミュレーションを回すと自動的にf_state.csvというcsvファイルが生成される。このファイルには各原子の最終状態（損失or捕獲or落下中）が数字（0, 1, 2）により記録されている。countif.cppはこのファイルを読み込み、誘導原子数、誘導効率[%]、飛行中原子数をguide_effic_ver.2.csvというファイルに書き出すプログラムである。
+
+【beam_power_flowchart.pdf, .xlsx】
+ビームパワー変化時のMonte Carloシミュレーションのシミュレーションフロー。ビームパワー以外の物理量を変化させる場合もこれと同じ構図でプログラムを組んである。
+
+【initial_position_generator.cpp】
+原子の初期位置（半径、方位角、仰角）を乱数を用いて発生させ、これをcsvファイルに出力するプログラム。
+
+【initial_velocity_generator.cpp】
+原子の初期速度を乱数を用いて発生させ、これをcsvファイルに出力するプログラム。
+
+【その他（beam_power.cpp etc.）】
+ファイル名に書かれている物理量を変化させた場合のMonte Carloシミュレーションである。
