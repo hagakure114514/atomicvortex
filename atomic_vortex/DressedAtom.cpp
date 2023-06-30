@@ -39,8 +39,8 @@ void DressedAtom::process_repump(atom* obj)
 				obj->v.vz += - hbar * k_wave / mass + hbar * k_recoil / mass;
 			}
 			default: {
-				double sp_psi = 2.0 * M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì•ûˆÊŠp
-				double sp_theata = M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì‹ÂŠp
+				double sp_psi = 2.0 * M_PI * dist(rand_src);
+				double sp_theata = M_PI * dist(rand_src);
 
 				obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
 				obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
@@ -74,18 +74,18 @@ void DressedAtom::process_diss(atom* obj)
 // motion within a time step dt
 void DressedAtom::step_motion(atom* obj)
 {
+	obj->r.x += 1.0/2.0 * (obj->v.vx + obj->v_pre.vx) * dt + 1.0/2.0 * obj->acc_x *dt * dt;
+	obj->r.y += 1.0/2.0 * (obj->v.vy + obj->v_pre.vy) * dt + 1.0/2.0 * obj->acc_y *dt * dt;
+	obj->r.z += 1.0/2.0 * (obj->v.vz + obj->v_pre.vz) * dt - 1.0/2.0 * G * dt * dt;
+
 	obj->v.vx += obj->acc_x * dt;
 	obj->v.vy += obj->acc_y * dt;
 	obj->v.vz += - G * dt;
-
-	obj->r.x += 1.0/2.0 * (obj->v.vx + obj->v_pre.vx) * dt;
-	obj->r.y += 1.0/2.0 * (obj->v.vy + obj->v_pre.vy) * dt;
-	obj->r.z += 1.0/2.0 * (obj->v.vz + obj->v_pre.vz) * dt;
+	obj->v_pre=obj->v;
 
 	obj->radius = sqrt(obj->r.x * obj->r.x + obj->r.y * obj->r.y);
-	obj->phi = atan2(obj->r.y, obj->r.x);
+	obj->phi = (obj->r.x == 0.0 && obj->r.y == 0.0) ? obj->phi : atan2(obj->r.y, obj->r.x);		//An azimuth need not be defined when r=0 (i.e. x=0 and y=0) but I defined it as it becomes continuous.
 
-	obj->v_pre=obj->v;
 	obj->acc_x = 0.0;
 	obj->acc_y = 0.0;	
 }
@@ -103,8 +103,8 @@ double DressedAtom::intensity(double x)
 // detuning doppler shift
 void DressedAtom::detuning_doppler(atom* obj)
 {
-	double vphi = -(obj->v.vx) * sin(obj->phi) + (obj->v.vy) * cos(obj->phi);
-	detuning = detuning0 - k_wave * (obj->v.vz) + l * vphi / (obj->radius);
+	double vphi = -(obj->v_pre.vx) * sin(obj->phi) + (obj->v_pre.vy) * cos(obj->phi);
+	detuning = detuning0 - k_wave * (obj->v_pre.vz) + l * vphi / (obj->radius);
 }
 
 // saturation parameter between |g1> and |e>
@@ -171,8 +171,8 @@ void DressedAtom::force_dip(atom* obj)
 		}
 	}
 
-	obj->acc_x += f_dip * cos(obj->phi) / mass;
-	obj->acc_y += f_dip * sin(obj->phi) / mass;
+	obj->acc_x = f_dip * cos(obj->phi) / mass;
+	obj->acc_y = f_dip * sin(obj->phi) / mass;
 	
 	if ((obj->phi > 0.0 && obj->phi < M_PI && obj->acc_y > 0)|| (obj->phi > M_PI/2.0 && obj->phi < 3.0*M_PI/2.0 && obj->acc_x < 0)) {
 		printf("dipole force error\n");

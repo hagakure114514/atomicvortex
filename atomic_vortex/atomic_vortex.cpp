@@ -98,7 +98,7 @@ int main()
 		for (int jj = 0; jj < 10; jj++) {
 			for (int m = 0; m < SAMPLE; m++) {
 
-				redoM:
+				//redoM:
 
 				position r0 = { x0[m], y0[m], z0[m] };
 				velocity v0 = { vx0[m], vy0[m], vz0[m] };
@@ -125,13 +125,13 @@ int main()
 					}
 				}
 
-				if (rb87->r.z > -0.25) {
-					goto redoM;
-				}
+				// if (rb87->r.z > -0.25) {
+				// 	goto redoM;
+				// }
 
 				double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi);
 
-				if (vphi > 0)	count_vphi++;
+				if (vphi > 0 && rb87->r.z < -0.25)	count_vphi++;
 				sum_sp += OV1.count_sp;
 
 			}
