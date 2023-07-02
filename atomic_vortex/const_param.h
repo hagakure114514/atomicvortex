@@ -24,10 +24,10 @@ const double beam_power = 100e-3;			//ƒr[ƒo—Í[W]
 
 
 //===ƒŠƒ|ƒ“ƒvŒõ ƒpƒ‰[ƒ[ƒ^[=================================================================================================================================
-const double detuning_pm = 2.0 * M_PI * 1e9;			//—£’² [rad/s]
+const double detuning_pm = 2.0 * M_PI * 10e6;			//—£’² [rad/s]
 const double lambda_pm = lambda;						//wavelength of detuned D2 line[m]
 const double w0_pm = 5e-3;								//ƒr[ƒ•[m]
-const double beam_power_pm = 50e-3;						//ƒr[ƒo—Í[W]
+const double beam_power_pm = 10e-3;						//ƒr[ƒo—Í[W]
 
 
 //===—â‹pŒ´Žq’c ƒpƒ‰ƒ[ƒ^[=================================================================================================================================

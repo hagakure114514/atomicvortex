@@ -2,7 +2,6 @@
 
 DressedAtom::DressedAtom()
 {
-	flag_sp = 1;
 	count_sp = 0;
 	detuning = detuning0;			//detuning between |e> and |g1>
 	srand((unsigned)time(NULL));	//a magic phrase to make random numbers be based on time
@@ -17,34 +16,38 @@ void DressedAtom::process_repump(atom* obj)
 		std::uniform_real_distribution<double> dist(0.0, 1.0);
 
 		double psp_pm = dist(rand_src);
-		double p1 = branch * (1.0 - exp( - gamma * s1_pm(obj->radius) * dt / 2.0));
+		double p1 = branch * (1.0 - exp( - gamma * s2_pm(obj->radius) * dt / 2.0));
 
 		if (psp_pm<=p1) {
 			obj->s = state::d1;
 
 			switch (flag_sp) {
 			case 0: {		//no OAM mode
-				double k_recoil = (dist(rand_src) > 0.5) ? 2.0 * M_PI/ lambda_pm : -2.0 * M_PI / lambda_pm;
-				obj->v.vz += - hbar * k_wave / mass + hbar * k_recoil / mass;
+				// double k_recoil = (dist(rand_src) > 0.5) ? 2.0 * M_PI/ lambda_pm : -2.0 * M_PI / lambda_pm;
+				// obj->v.vz += - hbar * k_wave / mass + hbar * k_recoil / mass;
+				obj->v.vz += - hbar * k_wave / mass;
 			}
 			case 1: {		// wavevector direction
-				double k_recoil = (dist(rand_src) > 0.5) ? 2.0 * M_PI / lambda_pm : -2.0 * M_PI / lambda_pm;
-				obj->v.vz += - hbar * k_wave / mass + hbar * k_recoil / mass;
+				// double k_recoil = (dist(rand_src) > 0.5) ? 2.0 * M_PI / lambda_pm : -2.0 * M_PI / lambda_pm;
+				// obj->v.vz += - hbar * k_wave / mass + hbar * k_recoil / mass;
+				obj->v.vz += - hbar * k_wave / mass;
 			}
 			case 2: {		// dipole radiation direction
 				// double sp2_psi = 2.0 * M_PI * dist(rand_src);	//psi around polarization axis
 				// double sp2_theata = M_PI * dist(rand_src);
 
-				double k_recoil = (dist(rand_src) > 0.5) ? k_wave * 1.0 : k_wave * -1.0;
-				obj->v.vz += - hbar * k_wave / mass + hbar * k_recoil / mass;
+				// double k_recoil = (dist(rand_src) > 0.5) ? k_wave * 1.0 : k_wave * -1.0;
+				// obj->v.vz += - hbar * k_wave / mass + hbar * k_recoil / mass;
+				obj->v.vz += - hbar * k_wave / mass;
 			}
 			default: {
-				double sp_psi = 2.0 * M_PI * dist(rand_src);
-				double sp_theata = M_PI * dist(rand_src);
+				// double sp_psi = 2.0 * M_PI * dist(rand_src);
+				// double sp_theata = M_PI * dist(rand_src);
 
-				obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
-				obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
-				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata) / mass;
+				// obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
+				// obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
+				// obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata) / mass;
+				obj->v.vz += - hbar * k_wave / mass;
 			}
 			}
 			count_sp++;
@@ -74,14 +77,14 @@ void DressedAtom::process_diss(atom* obj)
 // motion within a time step dt
 void DressedAtom::step_motion(atom* obj)
 {
-	obj->r.x += 1.0/2.0 * (obj->v.vx + obj->v_pre.vx) * dt + 1.0/2.0 * obj->acc_x *dt * dt;
-	obj->r.y += 1.0/2.0 * (obj->v.vy + obj->v_pre.vy) * dt + 1.0/2.0 * obj->acc_y *dt * dt;
+	obj->r.x += 1.0/2.0 * (obj->v.vx + obj->v_pre.vx) * dt + 1.0/2.0 * obj->acc_x * dt * dt;
+	obj->r.y += 1.0/2.0 * (obj->v.vy + obj->v_pre.vy) * dt + 1.0/2.0 * obj->acc_y * dt * dt;
 	obj->r.z += 1.0/2.0 * (obj->v.vz + obj->v_pre.vz) * dt - 1.0/2.0 * G * dt * dt;
 
 	obj->v.vx += obj->acc_x * dt;
 	obj->v.vy += obj->acc_y * dt;
 	obj->v.vz += - G * dt;
-	obj->v_pre=obj->v;
+	obj->v_pre = obj->v;
 
 	obj->radius = sqrt(obj->r.x * obj->r.x + obj->r.y * obj->r.y);
 	obj->phi = (obj->r.x == 0.0 && obj->r.y == 0.0) ? obj->phi : atan2(obj->r.y, obj->r.x);		//An azimuth need not be defined when r=0 (i.e. x=0 and y=0) but I defined it as it becomes continuous.
@@ -95,7 +98,6 @@ void DressedAtom::step_motion(atom* obj)
 double DressedAtom::intensity(double x)
 {
 	// Optical Vortex Electric Field: E0*sqrt(2)*r/w0 *exp(-r^2/w0^2)
-	double I0 = 2.0 * beam_power / (M_PI * w0 * w0);	//beam intensity coefficient [V/m]
 	double ints = 2.0*I0*x*x/(w0*w0)*exp(-2.0*x * x / (w0 * w0));			// intensity [V/m]
 	return ints;
 }
@@ -132,7 +134,6 @@ double DressedAtom::s2(double x)
 
 double DressedAtom::grad_s1(double x)
 {
-	double I0 = 2.0 * beam_power / (M_PI * w0 * w0);	//Å‘åƒr[ƒ‹­“x*1/e [V/m]
 	double grad_int = 4.0 * I0/(w0*w0) *(x - 2.0*x * x*x / (w0 * w0)) * exp(-2 * x * x / (w0 * w0));
 	double gs = grad_int /(I_s1 *(1 + 4 * detuning * detuning / (gamma1*gamma1)));
 	return gs;
@@ -140,7 +141,6 @@ double DressedAtom::grad_s1(double x)
 
 double DressedAtom::grad_s2(double x)
 {
-	double I0 = 2.0 * beam_power / (M_PI * w0 * w0);	//Å‘åƒr[ƒ‹­“x*1/e [V/m]
 	double grad_int = 4.0 * I0 / (w0 * w0) * (x - 2.0 * x * x * x / (w0 * w0)) * exp(-2 * x * x / (w0 * w0));
 	double gs = grad_int /(I_s2* (1 + 4 * (detuning + delta_hfs) * (detuning + delta_hfs) / (gamma2*gamma2)));
 	return gs;
@@ -171,12 +171,13 @@ void DressedAtom::force_dip(atom* obj)
 		}
 	}
 
-	obj->acc_x = f_dip * cos(obj->phi) / mass;
-	obj->acc_y = f_dip * sin(obj->phi) / mass;
-	
-	if ((obj->phi > 0.0 && obj->phi < M_PI && obj->acc_y > 0)|| (obj->phi > M_PI/2.0 && obj->phi < 3.0*M_PI/2.0 && obj->acc_x < 0)) {
+	if ( f_dip > 0 ) {
+		f_dip = 0;
 		printf("dipole force error\n");
 	}
+
+	obj->acc_x = f_dip * cos(obj->phi) / mass;
+	obj->acc_y = f_dip * sin(obj->phi) / mass;
 }
 
 
@@ -282,27 +283,23 @@ void DressedAtom::recoil_diss(atom* obj)
 	}
 }
 
-// saturation parameter between |g1> and |e>
-double DressedAtom::s1_pm(double x)
+// saturation parameter between |g2> and |e>
+double DressedAtom::s2_pm(double x)
 {
 	// Gaussian Electric Field: E0 *exp(-r^2/w0_pm^2)
-	double I0 = sqrt( 2.0 ) * beam_power_pm / (w0_pm * sqrt(M_PI * w0));	//beam intensity coefficient [V/m]
-	double ints = I0 * exp(-2.0*x * x / (w0_pm * w0_pm));			// intensity [V/m]
+	double I0_pm = sqrt( 2.0 ) * beam_power_pm / (w0_pm * sqrt(M_PI * w0));	//beam intensity coefficient [V/m]
+	double ints_pm = I0_pm * exp(-2.0*x * x / (w0_pm * w0_pm));			// intensity [V/m]
 
-	double s = intensity(x) / (I_s1 * (1.0 + 4.0 * detuning_pm * detuning_pm / (gamma1 * gamma1)));
+	double s_pm = ints_pm / (I_s2 * (1.0 + 4.0 * detuning_pm * detuning_pm / (gamma2 * gamma2)));
 	
-	if (s > 0.1) {
-		printf("s parameter of pm is error %e\n", s);
-	}
-	
-	return s;
+	return s_pm;
 } 
 
 
 // Calculate atom energy
 void DressedAtom::calc_energy(atom* obj)
 {
-	double Uopt = obj->s == state::d1? 2.0/3.0 * hbar * detuning / 2.0 *  log(1.0+s1(obj->radius)): 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 *  log(1.0+s2(obj->radius));
-	obj->E_kin = mass/k_b  *( obj->v.vx * obj->v.vx + obj->v.vy* obj->v.vy) + Uopt;
+	double Uopt = ( obj->s == state::d1 )? 2.0/3.0 * hbar * detuning / 2.0 *  log(1.0+s1(obj->radius)): 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 *  log(1.0+s2(obj->radius));
+	obj->E_kin = ( 1.0 / 2.0 * mass *( obj->v.vx * obj->v.vx + obj->v.vy * obj->v.vy + obj->v.vz * obj->v.vz) + Uopt + mass * G * obj->r.z ) * 2.0 / (3.0 * k_b);
 
 }

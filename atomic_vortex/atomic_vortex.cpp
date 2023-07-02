@@ -19,7 +19,7 @@ int main()
 	std::cin >> flag_mode;
 
 	// spontaneous emission mode  
-	printf("select spontaneous emission mode?\n 0:no OAM, 1:z-axis-sp, 2:dipole-radiation, 3:all direction \n");
+	printf("select spontaneous emission mode?\n 0:no sp, 1:z-axis-sp, 2:dipole-radiation, 3:all direction \n");
 	std::cin >> flag_sp_tmp;
 
 	if(flag_mode == 0){
@@ -43,6 +43,7 @@ int main()
 
 		// spontaneous emission mode  
 		OV1.flag_sp = flag_sp_tmp;
+		printf("spontaneous emission mode  %d\n", OV1.flag_sp);
 
 	    // 時間ステップごとの運動
 	    for (int i = 0; i <= jloop; i++) {
@@ -55,8 +56,10 @@ int main()
 	        x[i] = rb87->r.x;  y[i] = rb87->r.y;  z[i] = rb87->r.z;
 			vz[i] = rb87->v.vz; E[i]= rb87->E_kin;
 
+			ofs << x[i] << ", " << y[i] << ", " << z[i] << ", " << E[i] << "," << vz[i] << endl;
+
 			if (z[i] < -0.26) {
-				printf("z potision under -26 cm with %d processes (%e s)\n", i-1, 5.0e-5 *i);
+				printf("z potision under -26 cm with %d processes (%e s)\n", i, 5.0e-5 *i);
 				break;
 			}
 
@@ -64,11 +67,9 @@ int main()
 				printf("conf radius out at z=%e cm\n", z[i] * 1e2);
 				break;
 			}
-
-			ofs << x[i] << ", " << y[i] << ", " << z[i] << ", " << E[i] << "," << vz[i] << endl;
 	    }
 
-		if (rb87->r.z > -0.25) {
+		if (rb87->r.z > -0.20) {
 			goto redo;
 		}
 
@@ -95,13 +96,13 @@ int main()
 
 		printf("simulation execution\n");
 
-		for (int jj = 0; jj < 10; jj++) {
-			for (int m = 0; m < SAMPLE; m++) {
+		for (int jj = 0; jj < 100; jj++) {
+			for (int ii = 0; ii < SAMPLE; ii++) {
 
-				//redoM:
+				redoM:
 
-				position r0 = { x0[m], y0[m], z0[m] };
-				velocity v0 = { vx0[m], vy0[m], vz0[m] };
+				position r0 = { x0[ii], y0[ii], z0[ii] };
+				velocity v0 = { vx0[ii], vy0[ii], vz0[ii] };
 
 				// オブジェクトのコンストラクタ
 				atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
@@ -125,13 +126,13 @@ int main()
 					}
 				}
 
-				// if (rb87->r.z > -0.25) {
-				// 	goto redoM;
-				// }
+				if (rb87->r.z > -0.20) {
+				 	goto redoM;
+				}
 
 				double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi);
 
-				if (vphi > 0 && rb87->r.z < -0.25)	count_vphi++;
+				if (vphi > 0)	count_vphi++;
 				sum_sp += OV1.count_sp;
 
 			}
