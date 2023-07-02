@@ -17,6 +17,6 @@ public:
 
 	atom();
 	atom(position r0, velocity v0, state s0);
-	
+		
 };
 

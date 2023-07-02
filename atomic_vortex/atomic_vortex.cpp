@@ -77,11 +77,6 @@ int main()
 	    return 0;
 
 	}else{		
-
-		char fname[30];
-		sprintf_s(fname, "stat_azimuthal_vel.csv");
-		ofstream ofs(fname);        // ファイルパスを指定する
-
 	   	// 変数の定義
 	   	//double sum_temp=0.0;
 	   	int sum_sp=0;
@@ -96,10 +91,12 @@ int main()
 
 		printf("simulation execution\n");
 
+		char fname[30];
+		sprintf_s(fname, "stat_azimuthal_vel.csv");
+		ofstream ofs(fname);        // ファイルパスを指定する
+
 		for (int jj = 0; jj < 100; jj++) {
 			for (int ii = 0; ii < SAMPLE; ii++) {
-
-				redoM:
 
 				position r0 = { x0[ii], y0[ii], z0[ii] };
 				velocity v0 = { vx0[ii], vy0[ii], vz0[ii] };
@@ -125,14 +122,9 @@ int main()
 						break;
 					}
 				}
-
-				if (rb87->r.z > -0.20) {
-				 	goto redoM;
-				}
-
+				//if (rb87->r.z > -0.20) ii--;
 				double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi);
-
-				if (vphi > 0)	count_vphi++;
+				if (vphi > 0) count_vphi++;
 				sum_sp += OV1.count_sp;
 
 			}
@@ -140,11 +132,10 @@ int main()
 			printf("avarage spontaneous emission %d/%d times, ", sum_sp, SAMPLE);
 			printf("velocity of azimuthal direction %d/%d \n", count_vphi, SAMPLE);
 
-			ofs << (double)count_vphi/(double)SAMPLE << endl;
-
-			sum_sp = 0;
-			count_vphi = 0;
-		}
+		 	ofs << (double)count_vphi/(double)SAMPLE << endl;
+		 	sum_sp = 0;
+		 	count_vphi = 0;
+		 }
 	    return 0;
 
 	}
