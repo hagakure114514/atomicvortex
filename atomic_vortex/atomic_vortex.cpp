@@ -123,7 +123,7 @@ int main()
 					}
 				}
 				//if (rb87->r.z > -0.20) ii--;
-				double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi);
+				double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi) + rb87->l_rot / (rb87->radius * mass);
 				if (vphi > 0) count_vphi++;
 				sum_sp += OV1.count_sp;
 

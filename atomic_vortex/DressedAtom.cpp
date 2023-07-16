@@ -28,8 +28,6 @@ void DressedAtom::process_repump(atom* obj)
 				obj->v.vz += - hbar * k_wave / mass;
 			}
 			case 1: {		// wavevector direction
-				// double k_recoil = (dist(rand_src) > 0.5) ? 2.0 * M_PI / lambda_pm : -2.0 * M_PI / lambda_pm;
-				// obj->v.vz += - hbar * k_wave / mass + hbar * k_recoil / mass;
 				obj->v.vz += - hbar * k_wave / mass;
 			}
 			case 2: {		// dipole radiation direction
@@ -77,8 +75,8 @@ void DressedAtom::process_diss(atom* obj)
 // motion within a time step dt
 void DressedAtom::step_motion(atom* obj)
 {
-	obj->r.x += 1.0/2.0 * (obj->v.vx + obj->v_pre.vx) * dt + 1.0/2.0 * obj->acc_x * dt * dt;
-	obj->r.y += 1.0/2.0 * (obj->v.vy + obj->v_pre.vy) * dt + 1.0/2.0 * obj->acc_y * dt * dt;
+	obj->r.x += ( 1.0/2.0 * (obj->v.vx + obj->v_pre.vx) - obj->l_rot * sin(obj->radius) / (obj->radius * mass) ) * dt + 1.0/2.0 * obj->acc_x * dt * dt;
+	obj->r.y += ( 1.0/2.0 * (obj->v.vy + obj->v_pre.vy) + obj->l_rot * cos(obj->radius) / (obj->radius * mass) ) * dt + 1.0/2.0 * obj->acc_y * dt * dt;
 	obj->r.z += 1.0/2.0 * (obj->v.vz + obj->v_pre.vz) * dt - 1.0/2.0 * G * dt * dt;
 
 	obj->v.vx += obj->acc_x * dt;
@@ -105,7 +103,7 @@ double DressedAtom::intensity(double x)
 // detuning doppler shift
 void DressedAtom::detuning_doppler(atom* obj)
 {
-	double vphi = -(obj->v_pre.vx) * sin(obj->phi) + (obj->v_pre.vy) * cos(obj->phi);
+	double vphi = -(obj->v_pre.vx) * sin(obj->phi) + (obj->v_pre.vy) * cos(obj->phi) + obj->l_rot / (obj->radius * mass);
 	detuning = detuning0 - k_wave * (obj->v_pre.vz) + l * vphi / (obj->radius);
 }
 
@@ -231,24 +229,25 @@ void DressedAtom::recoil_diss(atom* obj)
 	}
 	case 1: {		// wavevector direction
 		double k_recoil = (dist(rand_src) < 0.5) ? k_wave : - k_wave;
-		obj->v.vx += - hbar * l / (obj->radius) * sin(obj->radius) / mass;
-		obj->v.vy += hbar * l / (obj->radius) * cos(obj->radius) / mass;
+		obj->l_rot +=  hbar * (double)l;
 		obj->v.vz += hbar * k_wave / mass - hbar * k_recoil / mass;
 	}
 	case 2: {		// dipole radiation direction
 		double sp2_psi = 2.0 * M_PI * dist(rand_src);	//psi around polarization axis
 		double sp2_theata = M_PI * dist(rand_src);
 
-		obj->v.vx += - hbar * l / (obj->radius) * sin(obj->radius) / mass;
-		obj->v.vy += hbar * l / (obj->radius) * cos(obj->radius) / mass;
+		obj->l_rot +=  hbar * (double)l;
+		// obj->v.vx += hbar * k_wave / mass;
+		// obj->v.vy += hbar * k_wave / mass;
 		obj->v.vz += hbar * k_wave / mass;
 	}
 	default: {
 		double sp_psi = 2.0 * M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì•ûˆÊŠp
 		double sp_theata = M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì‹ÂŠp
 
-		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass - hbar * l / (obj->radius) * sin(obj->radius) / mass;
-		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass + hbar * l / (obj->radius) * cos(obj->radius) / mass;
+		obj->l_rot +=  hbar * (double)l;
+		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
+		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
 		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
 	}
 	}
