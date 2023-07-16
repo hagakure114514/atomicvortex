@@ -75,8 +75,8 @@ void DressedAtom::process_diss(atom* obj)
 // motion within a time step dt
 void DressedAtom::step_motion(atom* obj)
 {
-	obj->r.x += ( 1.0/2.0 * (obj->v.vx + obj->v_pre.vx) - obj->l_rot * sin(obj->radius) / (obj->radius * mass) ) * dt + 1.0/2.0 * obj->acc_x * dt * dt;
-	obj->r.y += ( 1.0/2.0 * (obj->v.vy + obj->v_pre.vy) + obj->l_rot * cos(obj->radius) / (obj->radius * mass) ) * dt + 1.0/2.0 * obj->acc_y * dt * dt;
+	obj->r.x += ( 1.0/2.0 * (obj->v.vx + obj->v_pre.vx) - obj->l_rot * sin(obj->phi) / (obj->radius * mass) ) * dt + 1.0/2.0 * obj->acc_x * dt * dt;
+	obj->r.y += ( 1.0/2.0 * (obj->v.vy + obj->v_pre.vy) + obj->l_rot * cos(obj->phi) / (obj->radius * mass) ) * dt + 1.0/2.0 * obj->acc_y * dt * dt;
 	obj->r.z += 1.0/2.0 * (obj->v.vz + obj->v_pre.vz) * dt - 1.0/2.0 * G * dt * dt;
 
 	obj->v.vx += obj->acc_x * dt;

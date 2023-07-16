@@ -13,7 +13,7 @@ public:
 	double radius;
 	double phi;
 	double acc_x, acc_y;
-	double l_rot = 0.0; // 重心運動の角運動量 [kg*m^2/s]
+	double l_rot;		// 重心運動の角運動量 [kg*m^2/s]
 	double E_kin = 0.0;
 
 	atom();
