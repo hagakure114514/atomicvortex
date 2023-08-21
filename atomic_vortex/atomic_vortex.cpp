@@ -80,6 +80,7 @@ int main()
 	   	// 変数の定義
 	   	//double sum_temp=0.0;
 	   	int sum_sp=0;
+	   	int count_guide = 0;
 	   	int count_vphi = 0;
 
 	    // 配列の定義
@@ -115,6 +116,10 @@ int main()
 					OV1.step_motion(rb87);
 
 					if (rb87->r.z < -0.26) {
+						count_guide++;
+						sum_sp += OV1.count_sp;
+						double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi) + rb87->l_rot / (rb87->radius * mass);
+						if (vphi > 0) count_vphi++;
 						break;
 					}
 
@@ -122,18 +127,15 @@ int main()
 						break;
 					}
 				}
-				//if (rb87->r.z > -0.20) ii--;
-				double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi) + rb87->l_rot / (rb87->radius * mass);
-				if (vphi > 0) count_vphi++;
-				sum_sp += OV1.count_sp;
-
+				
 			}
+			
+			printf("avarage spontaneous emission %d/%d times, ", sum_sp, count_guide);
+			printf("velocity of azimuthal direction %d/%d \n", count_vphi, count_guide);
 
-			printf("avarage spontaneous emission %d/%d times, ", sum_sp, SAMPLE);
-			printf("velocity of azimuthal direction %d/%d \n", count_vphi, SAMPLE);
-
-		 	ofs << (double)count_vphi/(double)SAMPLE << endl;
+		 	ofs << (double)count_guide/(double)SAMPLE << ", " <<  (double)sum_sp/(double)count_guide << ", " << (double)count_vphi/(double)count_guide << endl;
 		 	sum_sp = 0;
+		 	count_guide = 0;
 		 	count_vphi = 0;
 		 }
 	    return 0;
