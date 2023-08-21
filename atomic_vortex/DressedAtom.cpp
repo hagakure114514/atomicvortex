@@ -23,12 +23,12 @@ void DressedAtom::process_repump(atom* obj)
 
 			switch (flag_sp) {
 			case 0: {		//no OAM mode
-				double sp_psi = 2.0 * M_PI * dist(rand_src);
-				double sp_theata = M_PI * dist(rand_src);
+				double sp0_psi = 2.0 * M_PI * dist(rand_src);
+				double sp0_theata = M_PI * dist(rand_src);
 
-				obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
-				obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
-				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata) / mass;
+				obj->v.vx += hbar * k_wave * sin(sp0_theata) * cos(sp0_psi) / mass;
+				obj->v.vy += hbar * k_wave * sin(sp0_theata) * sin(sp0_psi) / mass;
+				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp0_theata) / mass;
 			}
 			case 1: {		// wavevector direction
 				double k_recoil = (dist(rand_src) < 0.5) ? k_wave : - k_wave;
@@ -225,12 +225,12 @@ void DressedAtom::recoil_diss(atom* obj)
 
 	switch(flag_sp){
 	case 0: {		//no OAM mode
-		double sp_psi = 2.0 * M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì•ûˆÊŠp
-		double sp_theata = M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì‹ÂŠp
+		double sp0_psi = 2.0 * M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì•ûˆÊŠp
+		double sp0_theata = M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì‹ÂŠp
 
-		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
-		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
-		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
+		obj->v.vx += - hbar * k_wave * sin(sp0_theata) * cos(sp0_psi) / mass;
+		obj->v.vy += - hbar * k_wave * sin(sp0_theata) * sin(sp0_psi) / mass;
+		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp0_theata) / mass;
 	}
 	case 1: {		// wavevector direction
 		double k_recoil = (dist(rand_src) < 0.5) ? k_wave : - k_wave;
