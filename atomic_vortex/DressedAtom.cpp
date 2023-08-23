@@ -18,41 +18,25 @@ void DressedAtom::process_repump(atom* obj)
 		double psp_pm = dist(rand_src);
 		double p1 = branch * (1.0 - exp( - gamma * s2_pm(obj->radius) * dt / 2.0));
 
+		double sp_psi_pm = 2.0 * M_PI * dist(rand_src);
+		double sp_theata_pm = M_PI * dist(rand_src);
+
 		if (psp_pm<=p1) {
 			obj->s = state::d1;
+			count_sp++;			
 
-			switch (flag_sp) {
-			case 0: {		//no OAM mode
-				double sp0_psi = 2.0 * M_PI * dist(rand_src);
-				double sp0_theata = M_PI * dist(rand_src);
 
-				obj->v.vx += hbar * k_wave * sin(sp0_theata) * cos(sp0_psi) / mass;
-				obj->v.vy += hbar * k_wave * sin(sp0_theata) * sin(sp0_psi) / mass;
-				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp0_theata) / mass;
+			if(flag_sp == 2) {
+			// dipole radiation direction
+				obj->v.vx += hbar * k_wave * sin(sp_theata_pm) * cos(sp_psi_pm) / mass;
+				obj->v.vy += hbar * k_wave * sin(sp_theata_pm) * sin(sp_psi_pm) / mass;
+				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata_pm) / mass;
+			}else{
+			// default
+				obj->v.vx += hbar * k_wave * sin(sp_theata_pm) * cos(sp_psi_pm) / mass;
+				obj->v.vy += hbar * k_wave * sin(sp_theata_pm) * sin(sp_psi_pm) / mass;
+				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata_pm) / mass;
 			}
-			case 1: {		// wavevector direction
-				double k_recoil = (dist(rand_src) < 0.5) ? k_wave : - k_wave;
-				obj->v.vz += - hbar * k_wave / mass - hbar * k_recoil / mass;
-			}
-			case 2: {		// dipole radiation direction
-				// double sp2_psi = 2.0 * M_PI * dist(rand_src);	//psi around polarization axis
-				// double sp2_theata = M_PI * dist(rand_src);
-
-				// double k_recoil = (dist(rand_src) > 0.5) ? k_wave * 1.0 : k_wave * -1.0;
-				// obj->v.vz += - hbar * k_wave / mass + hbar * k_recoil / mass;
-				obj->v.vz += - hbar * k_wave / mass;
-			}
-			default: {
-				double sp_psi = 2.0 * M_PI * dist(rand_src);
-				double sp_theata = M_PI * dist(rand_src);
-
-				obj->v.vx += hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
-				obj->v.vy += hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
-				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata) / mass;
-			}
-			}
-			count_sp++;
-
 		}
 	}
 }
@@ -222,39 +206,33 @@ void DressedAtom::recoil_diss(atom* obj)
 	std::mt19937 rand_src(std::random_device{}());
 	std::uniform_real_distribution<double> dist(0.0, 1.0);
 	double p_recoil = dist(rand_src);
+	double sp_psi = 2.0 * M_PI * dist(rand_src);
+	double sp_theata = M_PI * dist(rand_src);
 
-	switch(flag_sp){
-	case 0: {		//no OAM mode
-		double sp0_psi = 2.0 * M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì•ûˆÊŠp
-		double sp0_theata = M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì‹ÂŠp
-
-		obj->v.vx += - hbar * k_wave * sin(sp0_theata) * cos(sp0_psi) / mass;
-		obj->v.vy += - hbar * k_wave * sin(sp0_theata) * sin(sp0_psi) / mass;
-		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp0_theata) / mass;
-	}
-	case 1: {		// wavevector direction
-		double k_recoil = (dist(rand_src) < 0.5) ? k_wave : - k_wave;
-		obj->l_rot +=  hbar * (double)l;
-		obj->v.vz += hbar * k_wave / mass - hbar * k_recoil / mass;
-	}
-	case 2: {		// dipole radiation direction
-		double sp2_psi = 2.0 * M_PI * dist(rand_src);	//psi around polarization axis
-		double sp2_theata = M_PI * dist(rand_src);
-
-		obj->l_rot +=  hbar * (double)l;
-		// obj->v.vx += hbar * k_wave / mass;
-		// obj->v.vy += hbar * k_wave / mass;
-		obj->v.vz += hbar * k_wave / mass;
-	}
-	default: {
-		double sp_psi = 2.0 * M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì•ûˆÊŠp
-		double sp_theata = M_PI * dist(rand_src);			//Ž©‘R•úo‚Ì‹ÂŠp
-
+	if(flag_sp == 1){
+		//no OAM mode
+		obj->l_rot = 0.0;
+		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
+		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
+		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
+	}else if(flag_sp == 2){
+		// dipole radiation direction
 		obj->l_rot +=  hbar * (double)l;
 		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
 		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
 		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
-	}
+	}else if(flag_sp == 4){
+		//no OAM mode
+		obj->l_rot += hbar * (double)l * 2.0;
+		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
+		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
+		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
+	}else{
+		// default
+		obj->l_rot +=  hbar * (double)l;
+		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
+		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
+		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
 	}
 
 	if (obj->s == state::d1) {
