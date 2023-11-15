@@ -39,5 +39,7 @@ private:
 	void recoil_diss(atom* obj);									// recoil of spontaneous emission
 
 	double s2_pm(double x);											// saturation parameter between |g2> and |e> of repump
+
+	void dip_sin2(double* x);										// random sin^2 x
 };
 

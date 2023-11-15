@@ -15,68 +15,69 @@ int main()
 	int flag_mode = 0;
 	int flag_sp_tmp = 3;
 
-	printf("select simulation mode?\n 0:trajectory of an atom, 1:molasess \n");
+	printf("select simulation mode?\n 0:trajectory of an atom, 1:molasess, 2:test \n");
 	std::cin >> flag_mode;
 
 	// spontaneous emission mode  
-	printf("select spontaneous emission mode?\n 1:no OAM, 2:dipole-radiation, 3:all direction, 4:high OAM \n");
+	printf("select spontaneous emission mode?\n 1:no OAM, 2:dipole-radiation, 3:all direction, 4:all direction(coherent OAM rad.)\n");
 	std::cin >> flag_sp_tmp;
 
-	if(flag_mode == 0){
+	if (flag_mode == 0) {
 
-		redo:
+	redo:
 
 		char fname[30];
 		sprintf_s(fname, "traj_p50um_v1cm.csv");
 		ofstream ofs(fname);        // ファイルパスを指定する
 
 		// オブジェクトのコンストラクタ
-		position r0={ 0.0, 50.0e-6, 0.0};
-		velocity v0={ 1.0e-2, 0.0, 0.0};
-	    atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
-	    atom* rb87 = &Rb87;
-	    DressedAtom OV1;			// dressed-atom状態オブジェクト
+		position r0 = { 0.0, 50.0e-6, 0.0 };
+		velocity v0 = { 1.0e-2, 0.0, 0.0 };
+		atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
+		atom* rb87 = &Rb87;
+		DressedAtom OV1;			// dressed-atom状態オブジェクト
 
-	    // 配列の定義
-	    double x[jloop + 1] = {}, y[jloop + 1] = {}, z[jloop+1] = {};
-	    double  vz[jloop + 1] = {}, E[jloop + 1] = {};											// 運動エネルギー　+　光ポテンシャル + 位置エネルギー
+		// 配列の定義
+		double x[jloop + 1] = {}, y[jloop + 1] = {}, z[jloop + 1] = {};
+		double  vz[jloop + 1] = {}, E[jloop + 1] = {};											// 運動エネルギー　+　光ポテンシャル + 位置エネルギー
 
 		// spontaneous emission mode  
 		OV1.flag_sp = flag_sp_tmp;
 		printf("selected sp mode:%d \n", OV1.flag_sp);
 
-	    // 時間ステップごとの運動
-	    for (int i = 0; i <= jloop; i++) {
+		// 時間ステップごとの運動
+		for (int i = 0; i <= jloop; i++) {
 			OV1.process_repump(rb87);
-	        OV1.process_dipole(rb87);
-	        OV1.process_diss(rb87);
-	        OV1.step_motion(rb87);
-	        OV1.calc_energy(rb87);
+			OV1.process_dipole(rb87);
+			OV1.process_diss(rb87);
+			OV1.step_motion(rb87);
+			OV1.calc_energy(rb87);
 
-	        x[i] = rb87->r.x;  y[i] = rb87->r.y;  z[i] = rb87->r.z;
-			vz[i] = rb87->v.vz; E[i]= rb87->E_kin;
+			x[i] = rb87->r.x;  y[i] = rb87->r.y;  z[i] = rb87->r.z;
+			vz[i] = rb87->v.vz; E[i] = rb87->E_kin;
 
 			ofs << x[i] << ", " << y[i] << ", " << z[i] << ", " << E[i] << "," << vz[i] << endl;
 
 			if (z[i] < -0.26) {
-				printf("z potision under -26 cm with %d processes (%e s)\n", i, 5.0e-5 *i);
+				printf("z potision under -26 cm with %d processes (%e s)\n", i, 5.0e-5 * i);
 				break;
 			}
 
-			if (rb87->radius > w0/sqrt(2.0)) {
+			if (rb87->radius > w0 / sqrt(2.0)) {
 				printf("conf radius out at z=%e cm\n", z[i] * 1e2);
 				break;
 			}
-	    }
+		}
 
 		if (rb87->r.z > -0.20) {
 			goto redo;
 		}
 
 		printf("spontaneous emission %d times\n", OV1.count_sp);
-	    return 0;
+		return 0;
 
-	}else{		
+	}
+	if(flag_mode == 1){		
 	   	// 変数の定義
 	   	int sum_sp=0;
 	   	int count_guide = 0;
@@ -116,9 +117,9 @@ int main()
 				if (rb87->r.z < -0.26) {
 					count_guide++;
 					sum_sp += OV1.count_sp;
-					double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi) + rb87->l_rot / (rb87->radius * mass);
-					ofs << vphi << endl;
-					if (vphi > 0) count_vphi++;
+					double angVf = ( -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi))* rb87->radius + rb87->l_rot / (mass);
+					ofs << angVf << endl;
+					if (angVf > 0) count_vphi++;
 					break;
 				}
 
@@ -132,6 +133,11 @@ int main()
 		printf("velocity of azimuthal direction %d/%d \n", count_vphi, count_guide);
 
 	 	ofs << (double)count_guide/(double)SAMPLE << ", " <<  (double)sum_sp/(double)count_guide << ", " << (double)count_vphi/(double)count_guide << endl;
+
+	    return 0;
+
+	}else{
+
 
 	    return 0;
 

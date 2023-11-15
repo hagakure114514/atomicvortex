@@ -216,13 +216,16 @@ void DressedAtom::recoil_diss(atom* obj)
 		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
 		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
 	}else if(flag_sp == 2){
-		// dipole radiation direction
-		obj->l_rot +=  hbar * (double)l;
-		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
-		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
-		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
+		// dipole radiation direction (azimuthal polarization)
+		// sp_theata	: dipole radiation angle 0-pi
+		// sp_psi		: angle around azimuthal axis
+		dip_sin2(&sp_theata);
+		obj->l_rot += hbar * (double)l;
+		obj->v.vx += -hbar * k_wave * cos(sp_theata + obj->phi - M_PI / 2.0) * cos(sp_psi) / mass;
+		obj->v.vy += -hbar * k_wave * sin(sp_theata + obj->phi - M_PI / 2.0) * cos(sp_psi) / mass;
+		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * sin(sp_psi) / mass;
 	}else if(flag_sp == 4){
-		//no OAM mode
+		// all directio (coherent OAM radiation)
 		obj->l_rot += hbar * (double)l * 2.0;
 		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
 		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
@@ -275,7 +278,9 @@ double DressedAtom::s2_pm(double x)
 	double s_pm = ints_pm / (I_s2 * (1.0 + 4.0 * detuning_pm * detuning_pm / (gamma2 * gamma2)));
 	
 	return s_pm;
-} 
+}
+
+
 
 
 // Calculate atom energy
@@ -284,4 +289,22 @@ void DressedAtom::calc_energy(atom* obj)
 	double Uopt = ( obj->s == state::d1 )? 2.0/3.0 * hbar * detuning / 2.0 *  log(1.0+s1(obj->radius)): 2.0/3.0 * hbar * (detuning + delta_hfs) / 2.0 *  log(1.0+s2(obj->radius));
 	obj->E_kin = ( 1.0 / 2.0 * mass *( obj->v.vx * obj->v.vx + obj->v.vy * obj->v.vy + obj->v.vz * obj->v.vz) + Uopt + mass * G * obj->r.z ) * 2.0 / (3.0 * k_b);
 
+}
+
+
+
+// random(dipole-radiation)
+void DressedAtom::dip_sin2(double* x) {
+
+	std::mt19937 rand_src(std::random_device{}());
+	std::uniform_real_distribution<double> dist(0.0, 1.0);
+
+	double p_uni, giji_ransu;
+	do {
+		p_uni = dist(rand_src);
+		giji_ransu = M_PI * dist(rand_src);
+
+	} while (p_uni > sin(giji_ransu) * sin(giji_ransu));
+
+	*x = giji_ransu;
 }
