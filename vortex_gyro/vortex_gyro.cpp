@@ -14,7 +14,6 @@ int main()
 {
 	const int flag_sp_tmp = 3;
 
-
 	   	// 変数の定義
 	   	int sum_sp=0;
 	   	int count_guide = 0;
@@ -33,90 +32,103 @@ int main()
 		printf("simulation execution\n");
 
 		char fname[30];
-		sprintf_s(fname, "stat_azimuthal_vel.csv");
+		sprintf_s(fname, "azimuthal_vel_time.csv");
 		ofstream ofs(fname);        // ファイルパスを指定する
 
-		for (int ii = 0; ii < SAMPLE; ii++) {
+	//	for (int lv = 0; lv < 3; lv++) {
+		//	ofs << lv << endl;
 
-			position r0 = { x0[ii], y0[ii], z0[ii] };
-			velocity v0 = { vx0[ii], vy0[ii], vz0[ii] };
+			for (int ii = 0; ii < SAMPLE; ii++) {
 
-			// オブジェクトのコンストラクタ
-			atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
-			atom* rb87 = &Rb87;
-			DressedAtom OV1;			// dressed-atom状態オブジェクト
-			OV1.flag_sp = flag_sp_tmp;
-
-			// 時間ステップごとの運動
-			for (int i = 0; i <= jloop; i++) {
-				OV1.process_repump(rb87);
-				OV1.process_dipole(rb87);
-				OV1.process_diss(rb87);
-				OV1.step_motion(rb87);
-
-				if (rb87->r.z < -0.26) {
-					count_guide++;
-					sum_sp += OV1.count_sp;
-					double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi) + rb87->l_rot / (rb87->radius * mass);
-					ofs << vphi << endl;
-					if (vphi > 0) count_vphi++;
-
-					xf[ii] = rb87->r.x; yf[ii] = rb87->r.y;
-					vxf[ii] = rb87->v.vx; vyf[ii] = rb87->v.vy; l_rotf[ii] = rb87->l_rot;
-					break;
-				}
-
-				if (rb87->radius > w0 / sqrt(2.0)) {
-					break;
-				}
-			}
-		}
-			
-		printf("Guide efficiency %f \n", (double)count_guide/(double)SAMPLE);
-		printf("The rotational direction unity %f \n", (double)count_vphi/(double)count_guide);
-		printf("spontaneous emission times %f \n", (double)sum_sp/(double)count_guide);
-
-
-		char fname[30];
-		sprintf_s(fname, "stat_vortex_100ms.csv");
-		ofstream ofs(fname);        // ファイルパスを指定する
-
-		for (int ii = 0; ii < SAMPLE; ii++) {
-
-			if(l_rotf[ii] != 0.0){
-				position r0 = { xf[ii], yf[ii], 0.0 };
-				velocity v0 = { vxf[ii], vyf[ii], 0.0 };
+				position r0 = { x0[ii], y0[ii], z0[ii] };
+				velocity v0 = { vx0[ii], vy0[ii], vz0[ii] };
 
 				// オブジェクトのコンストラクタ
-				atom Rb87(r0, v0, l_rotf[ii], state::d1);		// 原子オブジェクト
+				atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
 				atom* rb87 = &Rb87;
 				DressedAtom OV1;			// dressed-atom状態オブジェクト
 				OV1.flag_sp = flag_sp_tmp;
 
 				// 時間ステップごとの運動
-				for (int i = 0; i <= 2000; i++) {
+				for (int i = 0; i <= jloop; i++) {
 					OV1.process_repump(rb87);
+					OV1.process_dipole(rb87);
 					OV1.process_diss(rb87);
-					OV1.stepV_motion(rb87);
+					OV1.step_motion(rb87);
+
+					if (rb87->r.z < -0.26) {
+						count_guide++;
+						sum_sp += OV1.count_sp;
+						double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi) + rb87->l_rot / (rb87->radius * mass);
+						if (vphi > 0) count_vphi++;
+
+						xf[ii] = rb87->r.x; yf[ii] = rb87->r.y;
+						vxf[ii] = rb87->v.vx; vyf[ii] = rb87->v.vy; l_rotf[ii] = rb87->l_rot;
+						break;
+					}
 
 					if (rb87->radius > w0 / sqrt(2.0)) {
 						break;
 					}
 				}
-
-				if (rb87->radius < w0 / sqrt(2.0)) {
-					double vphi = -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi) + rb87->l_rot / (rb87->radius * mass);
-					ofs << vphi << endl;
-
-					xf[ii] = rb87->r.x; yf[ii] = rb87->r.y;
-					vxf[ii] = rb87->v.vx; vyf[ii] = rb87->v.vy; l_rotf[ii] = rb87->l_rot;
-				}else{
-					l_rotf[ii] = 0.0;
-				}
 			}
-			
-		}
 
+			printf("Guide efficiency %f \n", (double)count_guide / (double)SAMPLE);
+			printf("The rotational direction unity %f \n", (double)count_vphi / (double)count_guide);
+			printf("spontaneous emission times %f \n", (double)sum_sp / (double)count_guide);
+
+			ofs << (double)count_vphi / (double)count_guide << endl;
+
+			for (int j = 0; j < 20; j++) {
+				count_guide = 0;
+				count_vphi = 0;
+
+				for (int ii = 0; ii < SAMPLE; ii++) {
+
+					if (l_rotf[ii] != 0.0) {
+						position r0 = { xf[ii], yf[ii], 0.0 };
+						velocity v0 = { vxf[ii], vyf[ii], 0.0 };
+
+						// オブジェクトのコンストラクタ
+						atom Rb872(r0, v0, l_rotf[ii], state::d1);		// 原子オブジェクト
+						atom* rb872 = &Rb872;
+						DressedAtom OV2;			// dressed-atom状態オブジェクト
+						OV2.flag_sp = flag_sp_tmp;
+
+						// 時間ステップごとの運動
+						for (int i = 0; i <= 2000; i++) {
+							OV2.process_repump(rb872);
+							OV2.processV_diss(rb872);
+							OV2.stepV_motion(rb872);
+
+							if (rb872->radius > w0 / sqrt(2.0)) {
+								break;
+							}
+						}
+
+						if (rb872->radius < w0 / sqrt(2.0)) {
+							count_guide++;
+							double vphi = -(rb872->v.vx) * sin(rb872->phi) + (rb872->v.vy) * cos(rb872->phi) + rb872->l_rot / (rb872->radius * mass);
+							if (vphi > 0) count_vphi++;
+
+							xf[ii] = rb872->r.x; yf[ii] = rb872->r.y;
+							vxf[ii] = rb872->v.vx; vyf[ii] = rb872->v.vy; l_rotf[ii] = rb872->l_rot;
+						}
+						else {
+							l_rotf[ii] = 0.0;
+						}
+					}
+
+
+				}
+
+				ofs << (2.0*(double)count_vphi-(double)count_guide) / (double)count_guide << endl;			// R-L/R+L [%]
+
+				printf("The rotational direction unity %f \n", (2.0*(double)count_vphi-(double)count_guide) / (double)count_guide;
+
+			}
+
+	//	}
 
 	    return 0;
 

@@ -130,10 +130,10 @@ int main()
 		}
 			
 		printf("avarage spontaneous emission %d/%d times, ", sum_sp, count_guide);
-		printf("velocity of azimuthal direction %d/%d \n", count_vphi, count_guide);
+		printf("guide efficiency %lf, ", (double)count_guide/(double)SAMPLE *100);
+		printf("unity of azimuthal direction %lf \n", (2.0*(double)count_vphi-(double)count_guide) / (double)count_guide *100);			// R-L/R+L [%]
 
-	 	ofs << (double)count_guide/(double)SAMPLE << ", " <<  (double)sum_sp/(double)count_guide << ", " << (double)count_vphi/(double)count_guide << endl;
-
+	 	ofs << (double)count_guide/(double)SAMPLE << ", " <<  (double)sum_sp/(double)count_guide << ", " << (2.0*(double)count_vphi-(double)count_guide) / (double)count_guide << endl;
 	    return 0;
 
 	}else{

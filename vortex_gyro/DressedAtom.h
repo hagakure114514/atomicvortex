@@ -13,6 +13,7 @@ public:
 	void step_motion(atom* obj);
 	void calc_energy(atom* obj);
 
+	void processV_diss(atom* obj);
 	void stepV_motion(atom* obj);
 	
 	DressedAtom();

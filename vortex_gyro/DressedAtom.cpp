@@ -287,6 +287,57 @@ void DressedAtom::calc_energy(atom* obj)
 }
 
 
+
+
+void DressedAtom::processV_diss(atom* obj)
+{
+	if (spontaneous_emission(obj) == 1) {		// spontaneous emission occur
+		std::mt19937 rand_src(std::random_device{}());
+		std::uniform_real_distribution<double> dist(0.0, 1.0);
+		double p_recoil = dist(rand_src);
+		double sp_psi = 2.0 * M_PI * dist(rand_src);
+		double sp_theata = M_PI * dist(rand_src);
+
+
+		obj->v.vx += -hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
+		obj->v.vy += -hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
+		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
+
+		if (obj->s == state::d1) {
+			if (p_recoil <= branch) {
+				// To |1,n-1>
+				obj->s = state::d1;
+			}
+			else {
+				// To |2,n-1>
+				// Sisyphus cooling
+				obj->s = state::d2;
+
+				double uopt1 = 2.0 / 3.0 * hbar * detuning / 2.0 * log(1.0 + s1(obj->radius));
+				double uopt2 = 2.0 / 3.0 * hbar * (detuning + delta_hfs) / 2.0 * log(1.0 + s2(obj->radius));
+				double dK = uopt1 - uopt2;
+				double K_r = 1.0 / 2.0 * mass * ((obj->v.vx * cos(obj->phi)) * (obj->v.vx * cos(obj->phi)) + (obj->v.vy * sin(obj->phi)) * (obj->v.vy * sin(obj->phi)));
+				double tau = K_r - dK > 0 ? (K_r - dK) / K_r : 0.0;
+
+				// Kinetic energy loss
+				obj->v.vx *= (cos(obj->phi) * cos(obj->phi) * tau + sin(obj->phi) * sin(obj->phi));
+				obj->v.vy *= (cos(obj->phi) * cos(obj->phi) + sin(obj->phi) * sin(obj->phi) * tau);
+			}
+		}
+		else {
+			if (p_recoil <= branch) {
+				// To |1,n-1>
+				obj->s = state::d1;
+			}
+			else {
+				// To |2,n-1>
+				obj->s = state::d2;
+			}
+			count_sp++;
+		}
+	}
+}
+
 // motion within a time step dt
 void DressedAtom::stepV_motion(atom* obj)
 {
