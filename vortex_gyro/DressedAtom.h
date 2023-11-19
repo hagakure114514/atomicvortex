@@ -12,9 +12,6 @@ public:
 	void process_diss(atom* obj);
 	void step_motion(atom* obj);
 	void calc_energy(atom* obj);
-
-	void processV_diss(atom* obj);
-	void stepV_motion(atom* obj);
 	
 	DressedAtom();
 	int flag_sp;
@@ -42,5 +39,7 @@ private:
 	void recoil_diss(atom* obj);									// recoil of spontaneous emission
 
 	double s2_pm(double x);											// saturation parameter between |g2> and |e> of repump
+
+	void dip_sin2(double* x);										// random sin^2 x
 };
 

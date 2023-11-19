@@ -17,7 +17,6 @@ public:
 	double E_kin = 0.0;
 
 	atom();
-	atom(position r0, velocity v0, state s0);
-	atom(position r0, velocity v0, double l_rot0, state s0);
+	atom(position r0, velocity v0, state s0);	
 };
 

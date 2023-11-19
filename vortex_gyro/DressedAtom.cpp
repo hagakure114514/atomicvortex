@@ -25,14 +25,16 @@ void DressedAtom::process_repump(atom* obj)
 			obj->s = state::d1;
 			count_sp++;			
 
-
 			if(flag_sp == 2) {
 			// dipole radiation direction
+				dip_sin2(&sp_theata_pm);
+				obj->l_rot += hbar * (-(double)l_pm);
 				obj->v.vx += hbar * k_wave * sin(sp_theata_pm) * cos(sp_psi_pm) / mass;
 				obj->v.vy += hbar * k_wave * sin(sp_theata_pm) * sin(sp_psi_pm) / mass;
 				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata_pm) / mass;
 			}else{
 			// default
+				obj->l_rot += hbar * (-(double)l_pm);
 				obj->v.vx += hbar * k_wave * sin(sp_theata_pm) * cos(sp_psi_pm) / mass;
 				obj->v.vy += hbar * k_wave * sin(sp_theata_pm) * sin(sp_psi_pm) / mass;
 				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata_pm) / mass;
@@ -216,13 +218,16 @@ void DressedAtom::recoil_diss(atom* obj)
 		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
 		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
 	}else if(flag_sp == 2){
-		// dipole radiation direction
-		obj->l_rot +=  hbar * (double)l;
-		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
-		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
-		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
+		// dipole radiation direction (azimuthal polarization)
+		// sp_theata	: dipole radiation angle 0-pi
+		// sp_psi		: angle around azimuthal axis
+		dip_sin2(&sp_theata);
+		obj->l_rot += hbar * (double)l;
+		obj->v.vx += -hbar * k_wave * cos(sp_theata + obj->phi - M_PI / 2.0) * cos(sp_psi) / mass;
+		obj->v.vy += -hbar * k_wave * sin(sp_theata + obj->phi - M_PI / 2.0) * cos(sp_psi) / mass;
+		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * sin(sp_psi) / mass;
 	}else if(flag_sp == 4){
-		//no OAM mode
+		// all directio (coherent OAM radiation)
 		obj->l_rot += hbar * (double)l * 2.0;
 		obj->v.vx += - hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
 		obj->v.vy += - hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
@@ -269,13 +274,14 @@ void DressedAtom::recoil_diss(atom* obj)
 double DressedAtom::s2_pm(double x)
 {
 	// Gaussian Electric Field: E0 *exp(-r^2/w0_pm^2)
-	double I0_pm = sqrt( 2.0 ) * beam_power_pm / (w0_pm * sqrt(M_PI * w0));	//beam intensity coefficient [V/m]
-	double ints_pm = I0_pm * exp(-2.0*x * x / (w0_pm * w0_pm));			// intensity [V/m]
-
+	double I0_pm = 2.0 * beam_power_pm / (M_PI * w0_pm * w0_pm);	//beam intensity coefficient [V/m]
+	double ints_pm = 2.0*I0_pm*x*x/(w0_pm * w0_pm)*exp(-2.0*x * x / (w0_pm * w0_pm));			// intensity [V/m]
 	double s_pm = ints_pm / (I_s2 * (1.0 + 4.0 * detuning_pm * detuning_pm / (gamma2 * gamma2)));
 	
 	return s_pm;
-} 
+}
+
+
 
 
 // Calculate atom energy
@@ -288,71 +294,18 @@ void DressedAtom::calc_energy(atom* obj)
 
 
 
+// random(dipole-radiation)
+void DressedAtom::dip_sin2(double* x) {
 
-void DressedAtom::processV_diss(atom* obj)
-{
-	if (spontaneous_emission(obj) == 1) {		// spontaneous emission occur
-		std::mt19937 rand_src(std::random_device{}());
-		std::uniform_real_distribution<double> dist(0.0, 1.0);
-		double p_recoil = dist(rand_src);
-		double sp_psi = 2.0 * M_PI * dist(rand_src);
-		double sp_theata = M_PI * dist(rand_src);
+	std::mt19937 rand_src(std::random_device{}());
+	std::uniform_real_distribution<double> dist(0.0, 1.0);
 
+	double p_uni, giji_ransu;
+	do {
+		p_uni = dist(rand_src);
+		giji_ransu = M_PI * dist(rand_src);
 
-		obj->v.vx += -hbar * k_wave * sin(sp_theata) * cos(sp_psi) / mass;
-		obj->v.vy += -hbar * k_wave * sin(sp_theata) * sin(sp_psi) / mass;
-		obj->v.vz += hbar * k_wave / mass - hbar * k_wave * cos(sp_theata) / mass;
+	} while (p_uni > sin(giji_ransu) * sin(giji_ransu));
 
-		if (obj->s == state::d1) {
-			if (p_recoil <= branch) {
-				// To |1,n-1>
-				obj->s = state::d1;
-			}
-			else {
-				// To |2,n-1>
-				// Sisyphus cooling
-				obj->s = state::d2;
-
-				double uopt1 = 2.0 / 3.0 * hbar * detuning / 2.0 * log(1.0 + s1(obj->radius));
-				double uopt2 = 2.0 / 3.0 * hbar * (detuning + delta_hfs) / 2.0 * log(1.0 + s2(obj->radius));
-				double dK = uopt1 - uopt2;
-				double K_r = 1.0 / 2.0 * mass * ((obj->v.vx * cos(obj->phi)) * (obj->v.vx * cos(obj->phi)) + (obj->v.vy * sin(obj->phi)) * (obj->v.vy * sin(obj->phi)));
-				double tau = K_r - dK > 0 ? (K_r - dK) / K_r : 0.0;
-
-				// Kinetic energy loss
-				obj->v.vx *= (cos(obj->phi) * cos(obj->phi) * tau + sin(obj->phi) * sin(obj->phi));
-				obj->v.vy *= (cos(obj->phi) * cos(obj->phi) + sin(obj->phi) * sin(obj->phi) * tau);
-			}
-		}
-		else {
-			if (p_recoil <= branch) {
-				// To |1,n-1>
-				obj->s = state::d1;
-			}
-			else {
-				// To |2,n-1>
-				obj->s = state::d2;
-			}
-			count_sp++;
-		}
-	}
-}
-
-// motion within a time step dt
-void DressedAtom::stepV_motion(atom* obj)
-{
-	obj->r.x += ( 1.0/2.0 * (obj->v.vx + obj->v_pre.vx) - obj->l_rot * sin(obj->phi) / (obj->radius * mass) ) * dt + 1.0/2.0 * obj->acc_x * dt * dt;
-	obj->r.y += ( 1.0/2.0 * (obj->v.vy + obj->v_pre.vy) + obj->l_rot * cos(obj->phi) / (obj->radius * mass) ) * dt + 1.0/2.0 * obj->acc_y * dt * dt;
-	obj->r.z = 0.0;
-
-	obj->v.vx += obj->acc_x * dt;
-	obj->v.vy += obj->acc_y * dt;
-	obj->v.vz = 0.0;
-	obj->v_pre = obj->v;
-
-	obj->radius = sqrt(obj->r.x * obj->r.x + obj->r.y * obj->r.y);
-	obj->phi = (obj->r.x == 0.0 && obj->r.y == 0.0) ? obj->phi : atan2(obj->r.y, obj->r.x);		//An azimuth need not be defined when r=0 (i.e. x=0 and y=0) but I defined it as it becomes continuous.
-
-	obj->acc_x = 0.0;
-	obj->acc_y = 0.0;	
+	*x = giji_ransu;
 }
