@@ -7,13 +7,13 @@ class atom
 {
 public:
 	position r;
-	velocity v;			//並進運動の速度
-	velocity v_pre;		//並進運動の速度
+	velocity v;			// center-of-mass motion velocity
+	velocity v_pre;		// center-of-mass motion velocity
 	state s;
 	double radius;
 	double phi;
 	double acc_x, acc_y;
-	double l_rot = 0.0;		// 重心運動の角運動量 [kg*m^2/s]
+	double l_rot = 0.0;		// orbital angular momentum around beam axis [kg*m^2/s]
 	double E_kin = 0.0;
 
 	atom();

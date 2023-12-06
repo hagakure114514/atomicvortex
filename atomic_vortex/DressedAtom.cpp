@@ -8,38 +8,77 @@ DressedAtom::DressedAtom()
 
 }
 
+///////////////////////////////////// Repump beam //////////////////////////////////////////////
+
 // Repump
 void DressedAtom::process_repump(atom* obj)
 {
-	if(obj->s == state::d2){
-		std::mt19937 rand_src(std::random_device{}());
-		std::uniform_real_distribution<double> dist(0.0, 1.0);
-
-		double psp_pm = dist(rand_src);
-		double p1 = branch * (1.0 - exp( - gamma * s2_pm(obj->radius) * dt / 2.0));
-
-		double sp_psi_pm = 2.0 * M_PI * dist(rand_src);
-		double sp_theata_pm = M_PI * dist(rand_src);
-
-		if (psp_pm<=p1) {
-			obj->s = state::d1;
-			count_sp++;			
-
-
-			if(flag_sp == 2) {
-			// dipole radiation direction
-				obj->v.vx += hbar * k_wave * sin(sp_theata_pm) * cos(sp_psi_pm) / mass;
-				obj->v.vy += hbar * k_wave * sin(sp_theata_pm) * sin(sp_psi_pm) / mass;
-				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata_pm) / mass;
-			}else{
-			// default
-				obj->v.vx += hbar * k_wave * sin(sp_theata_pm) * cos(sp_psi_pm) / mass;
-				obj->v.vy += hbar * k_wave * sin(sp_theata_pm) * sin(sp_psi_pm) / mass;
-				obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata_pm) / mass;
-			}
-		}
+		if (repump_emission(obj) == 1) {		// spontaneous emission occur in Repump beam
+		recoil_diss_pm(obj);
+		count_sp++;
 	}
 }
+
+// spontaneou semission hanbetu
+bool DressedAtom::repump_emission(atom* obj)
+{
+	std::mt19937 rand_src(std::random_device{}());
+	std::uniform_real_distribution<double> dist(0.0, 1.0);
+
+	bool p_pm;
+	double psp_pm = dist(rand_src);
+
+	if (obj->s == state::d2) {
+		double p2 = branch * (1.0 - exp( - gamma * s2_pm(obj->radius) * dt / 2.0));
+		p_pm = psp_pm<=p2 ? 1 : 0;
+	}
+	else {
+		double p_diss = dist(rand_src);
+		if (p_diss <= branch) {
+			obj->s = state::d1;
+			p_pm=0;
+		}
+		else {
+			obj->s = state::d2;
+			double p2 = branch * (1.0 - exp( - gamma * s2_pm(obj->radius) * dt / 2.0));
+			p_pm = psp_pm <=p2 ? 1 : 0;
+		}
+	}
+	return p_pm;
+}
+
+// recoil
+void DressedAtom::recoil_diss_pm(atom* obj)
+{
+	std::mt19937 rand_src(std::random_device{}());
+	std::uniform_real_distribution<double> dist(0.0, 1.0);
+	
+	double sp_psi_pm = 2.0 * M_PI * dist(rand_src);
+	double sp_theata_pm = M_PI * dist(rand_src);
+
+	if(flag_sp == 2) {
+		// dipole radiation direction
+		dip_sin2(&sp_theata_pm);
+		obj->l_rot += hbar * (-(double)l_pm);
+		obj->v.vx += hbar * k_wave * sin(sp_theata_pm) * cos(sp_psi_pm) / mass;
+		obj->v.vy += hbar * k_wave * sin(sp_theata_pm) * sin(sp_psi_pm) / mass;
+		obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata_pm) / mass;
+	}else{
+		// default
+		obj->l_rot += hbar * (-(double)l_pm);
+		obj->v.vx += hbar * k_wave * sin(sp_theata_pm) * cos(sp_psi_pm) / mass;
+		obj->v.vy += hbar * k_wave * sin(sp_theata_pm) * sin(sp_psi_pm) / mass;
+		obj->v.vz += - hbar * k_wave / mass + hbar * k_wave * cos(sp_theata_pm) / mass;
+	}
+
+	obj->s = state::d1;
+}
+
+
+
+
+///////////////////////////////////// Guide beam //////////////////////////////////////////////
+
 
 // Optcal potential
 void DressedAtom::process_dipole(atom* obj)
@@ -58,6 +97,11 @@ void DressedAtom::process_diss(atom* obj)
 
 }
 
+
+
+
+
+///////////////////////////////////// Step motion //////////////////////////////////////////////
 
 // motion within a time step dt
 void DressedAtom::step_motion(atom* obj)
@@ -78,6 +122,9 @@ void DressedAtom::step_motion(atom* obj)
 	obj->acc_y = 0.0;	
 }
 
+
+
+///////////////////////////////////// Functions for a Guide beam //////////////////////////////////////////////
 
 // intensity function of Optical Vortex
 double DressedAtom::intensity(double x)
@@ -268,20 +315,6 @@ void DressedAtom::recoil_diss(atom* obj)
 	}
 }
 
-// saturation parameter between |g2> and |e>
-double DressedAtom::s2_pm(double x)
-{
-	// Gaussian Electric Field: E0 *exp(-r^2/w0_pm^2)
-	double I0_pm = sqrt( 2.0 ) * beam_power_pm / (w0_pm * sqrt(M_PI * w0));	//beam intensity coefficient [V/m]
-	double ints_pm = I0_pm * exp(-2.0*x * x / (w0_pm * w0_pm));			// intensity [V/m]
-
-	double s_pm = ints_pm / (I_s2 * (1.0 + 4.0 * detuning_pm * detuning_pm / (gamma2 * gamma2)));
-	
-	return s_pm;
-}
-
-
-
 
 // Calculate atom energy
 void DressedAtom::calc_energy(atom* obj)
@@ -308,3 +341,21 @@ void DressedAtom::dip_sin2(double* x) {
 
 	*x = giji_ransu;
 }
+
+
+
+///////////////////////////////////// Functions for a repump beam //////////////////////////////////////////////
+
+// saturation parameter between |g2> and |e>
+double DressedAtom::s2_pm(double x)
+{
+	// Gaussian Electric Field: E0 *exp(-r^2/w0_pm^2)
+	double ints_pm = 2.0*I0_pm*x*x/(w0_pm * w0_pm)*exp(-2.0*x * x / (w0_pm * w0_pm));			// intensity [V/m]
+	double s_pm = ints_pm / (I_s2 * (1.0 + 4.0 * detuning_pm * detuning_pm / (gamma2 * gamma2)));
+	
+	return s_pm;
+}
+
+
+
+

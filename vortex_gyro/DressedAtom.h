@@ -21,6 +21,7 @@ private:
 	double detuning;			//detuning between |e> and |g1> [rad/s]
 	double k_wave = 2.0 * M_PI / lambda;								//wavenumber[/m]
 	const double I0 = 2.0 * beam_power / (M_PI * w0 * w0);	//beam intensity coefficient [V/m]
+	const double I0_pm = 2.0 * beam_power_pm / (M_PI * w0_pm * w0_pm);	//beam intensity coefficient [V/m]
 	const double gamma1 = gamma * branch;									//spontaneous decay rate between |e> and |1>[rad/s]
 	const double gamma2 = gamma * (1.0 - branch);							//spontaneous decay rate between |e> and |2>[rad/s]
 	const double lambda1 = 780.2e-9;								//wavelength between |e> and |g1>[m]
@@ -37,6 +38,8 @@ private:
 	void force_dip(atom* obj);										// Optical potential
 	bool spontaneous_emission(atom* obj);							// spontaneous emission
 	void recoil_diss(atom* obj);									// recoil of spontaneous emission
+	bool repump_emission(atom* obj);							// spontaneous emission
+	void recoil_diss_pm(atom* obj);									// recoil of spontaneous emission
 
 	double s2_pm(double x);											// saturation parameter between |g2> and |e> of repump
 
