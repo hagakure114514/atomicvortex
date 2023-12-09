@@ -69,7 +69,7 @@ int main()
 			}
 		}
 
-		if (rb87->r.z > -0.20) {
+		if (rb87->r.z > -0.26) {
 			goto redo;
 		}
 

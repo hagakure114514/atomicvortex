@@ -28,7 +28,7 @@ bool DressedAtom::repump_emission(atom* obj)
 	bool p_pm;
 	double psp_pm = dist(rand_src);
 
-	if (obj->s == state::d2) {
+	if (obj->s == state::d1) {
 		p_pm = 0;
 
 	}else if (obj->s == state::d2) {
