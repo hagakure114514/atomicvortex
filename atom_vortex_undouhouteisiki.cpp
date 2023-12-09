@@ -49,7 +49,7 @@ double I(double rh);                             //ビーム強度[W/m^2]
 //===Repump beam(Optical Vortex)=================================================================================================================================
 const int l_pm = -l;				//OAM
 const double detuning0_pm = -2.0 * M_PI * 10e6;			//detuning [rad/s]
-const double w0_pm = 1e-3;								//beam waist[m]
+const double w0_pm = 1.5e-3;								//beam waist[m]
 const double beam_power_pm = 10e-3;						//beam power[W]
 const double I0_pm = 2.0 * beam_power_pm / (M_PI * w0_pm * w0_pm);                      //ビームパワー[W/m^2]
 const double k_pm = -2 * M_PI / lambda + (detuning0_pm - delta_hfs) / c;                //波数
@@ -176,7 +176,7 @@ int main()
         }
 
         printf("trap efficiency[%%]:%e\n", (double)count_trap / (double)SAMPLE * 1e2);
-        printf("rotation direction[%%]:%e\n", (2*(double)count_cw / (double)count_trap -1.0 )* 1e2);
+        printf("rotation direction[%%]:%e\n", (2*(double)count_cw- (double)count_trap)/ (double)count_trap * 1e2);
 
         return 0;
 
