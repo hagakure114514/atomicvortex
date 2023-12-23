@@ -25,10 +25,10 @@ const double beam_power = 100e-3;			//beam power[W]
 
 //===Repump beam(Optical Vortex)=================================================================================================================================
 const int l_pm = -l;				//OAM
-const double detuning_pm = - 2.0 * M_PI * 100e6;			//detuning [rad/s]
+const double detuning_pm =  2.0 * M_PI * 340e6;			//detuning [rad/s]
 const double lambda_pm = lambda;						//wavelength of detuned D2 line[m]
-const double w0_pm = 1.5e-3;								//beam waist[m]
-const double beam_power_pm = 10e-3;						//beam power[W]
+const double w0_pm = 2.0e-3;								//beam waist[m]
+const double beam_power_pm = 100e-3;						//beam power[W]
 
 
 //===Cooling atom cluster=================================================================================================================================

@@ -31,8 +31,8 @@ int main()
 		ofstream ofs(fname);        // ファイルパスを指定する
 
 		// オブジェクトのコンストラクタ
-		position r0 = { 0.0, 50.0e-6, 0.0 };
-		velocity v0 = { 1.0e-2, 0.0, 0.0 };
+		position r0 = { 100.0e-6 / sqrt(2), 100.0e-6 / sqrt(2), 0.0 };
+		velocity v0 = { 10.0e-2 / sqrt(2), 10.0e-2 / sqrt(2), 0.0 };
 		atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
 		atom* rb87 = &Rb87;
 		DressedAtom OV1;			// dressed-atom状態オブジェクト
@@ -86,6 +86,7 @@ int main()
 	    // 配列の定義
 	    double x0[SAMPLE + 1] = {}, y0[SAMPLE + 1] = {}, z0[SAMPLE + 1] = {};
 	    double vx0[SAMPLE + 1] = {}, vy0[SAMPLE + 1] = {}, vz0[SAMPLE + 1] = {};
+	    double T_final = 0.0;
 
 	    rm_position(x0, y0, z0);
 		rm_velocity(vx0, vy0, vz0);
@@ -117,6 +118,7 @@ int main()
 				if (rb87->r.z < -0.26) {
 					count_guide++;
 					sum_sp += OV1.count_sp;
+					T_final+=1.0/2.0*mass*(rb87->v.vx*rb87->v.vx + rb87->v.vy*rb87->v.vy + rb87->v.vz*rb87->v.vz);
 					double angVf = ( -(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi))* rb87->radius + rb87->l_rot / (mass);
 					ofs << angVf << endl;
 					if (angVf > 0) count_vphi++;
@@ -132,8 +134,9 @@ int main()
 		printf("avarage spontaneous emission %d/%d times, ", sum_sp, count_guide);
 		printf("guide efficiency %lf, ", (double)count_guide/(double)SAMPLE *100);
 		printf("unity of azimuthal direction %lf \n", (2.0*(double)count_vphi-(double)count_guide) / (double)count_guide *100);			// R-L/R+L [%]
+		printf("avarage Temperature %lf \n mK ", 2.0/(3.0*k_b)*T_final/(double)count_guide*1e3);
 
-	 	ofs << (double)count_guide/(double)SAMPLE << ", " <<  (double)sum_sp/(double)count_guide << ", " << (2.0*(double)count_vphi-(double)count_guide) / (double)count_guide << endl;
+	 	ofs << (double)count_guide/(double)SAMPLE << ", " <<  (double)sum_sp/(double)count_guide << ", " << (2.0*(double)count_vphi-(double)count_guide) / (double)count_guide << ", " << 2.0/(3.0*k_b)*T_final/(double)count_guide << endl;
 	    return 0;
 
 	}else{
