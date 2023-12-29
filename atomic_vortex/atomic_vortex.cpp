@@ -32,7 +32,7 @@ int main()
 
 		// オブジェクトのコンストラクタ
 		position r0 = { 100.0e-6 / sqrt(2), 100.0e-6 / sqrt(2), 0.0 };
-		velocity v0 = { 10.0e-2 / sqrt(2), 10.0e-2 / sqrt(2), 0.0 };
+		velocity v0 = { 0.0, 0.0, 0.0 };
 		atom Rb87(r0, v0, state::d1);		// 原子オブジェクト
 		atom* rb87 = &Rb87;
 		DressedAtom OV1;			// dressed-atom状態オブジェクト
@@ -60,6 +60,8 @@ int main()
 
 			if (z[i] < -0.26) {
 				printf("z potision under -26 cm with %d processes (%e s)\n", i, 5.0e-5 * i);
+				double angVf = (-(rb87->v.vx) * sin(rb87->phi) + (rb87->v.vy) * cos(rb87->phi)) * rb87->radius + rb87->l_rot / (mass);
+				if (angVf > 0) printf("The rotate direction is untied to OV\n");
 				break;
 			}
 

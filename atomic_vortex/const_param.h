@@ -34,7 +34,7 @@ const double beam_power_pm = 100e-3;						//beam power[W]
 //===Cooling atom cluster=================================================================================================================================
 const double r0 = 1.0e-3;												//MOT radius[m]
 const double temp = 10.0e-6;										//temperature of MOT[K]
-const double v_max = 0.15;
+const double v_max = 0.15*sqrt(temp/10e-6);
 
 //===Simulation conditions=================================================================================================================================
 const int SAMPLE = 1000;											//number of sample atoms[-]
