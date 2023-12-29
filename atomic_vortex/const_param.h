@@ -19,7 +19,7 @@ const double gamma = 38.1e+6;										//natural linewidth of D2 line[rad/s]
 const int l = 1;				//OAM
 const double detuning0 = 2.0 * M_PI * 1e9;			//detuning [rad/s]
 const double lambda = c / (c / 780.2e-9 + detuning0 / (2.0 * M_PI));				//wavelength of detuned D2 line[m]
-const double w0 = 2e-3;			//beam waist[m]
+const double w0 = 2.0e-3;			//beam waist[m]
 const double beam_power = 100e-3;			//beam power[W]
 
 
